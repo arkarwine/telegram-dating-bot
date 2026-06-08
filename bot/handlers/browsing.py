@@ -9,22 +9,30 @@ from bot.matching import next_candidate
 from bot.models import profile_is_complete
 
 
-async def send_next_profile(ctx: AppContext, message: Message, user_id: int) -> None:
+async def send_next_profile(
+    ctx: AppContext, message: Message, user_id: int, edit: bool = False
+) -> None:
     user = await ctx.users.get_by_telegram_id(user_id)
     language = user.get("language") if user else ctx.settings.default_language
     viewer_profile = await ctx.profiles.get(user_id)
     candidate = await next_candidate(user_id, ctx.profiles, ctx.actions)
     if not candidate:
-        await message.reply_text(t(language, "no_candidates"))
+        text = t(language, "no_candidates")
+        if edit:
+            await message.edit_text(text)
+        else:
+            await message.reply_text(text)
         return
     can_like = profile_is_complete(viewer_profile)
+    text = profile_card(candidate, anonymous=not can_like)
     if not can_like:
         await ctx.users.increment_preview(user_id)
-        await message.reply_text(t(language, "anonymous_notice"))
-    await message.reply_text(
-        profile_card(candidate, anonymous=not can_like),
-        reply_markup=browse_keyboard(candidate["user_id"], can_like=can_like),
-    )
+        text = f"{t(language, 'anonymous_notice')}\n\n{text}"
+    markup = browse_keyboard(candidate["user_id"], can_like=can_like)
+    if edit:
+        await message.edit_text(text, reply_markup=markup)
+    else:
+        await message.reply_text(text, reply_markup=markup)
 
 
 def register(app: Client, ctx: AppContext) -> None:
@@ -32,6 +40,12 @@ def register(app: Client, ctx: AppContext) -> None:
     async def browse_handler(_: Client, message: Message) -> None:
         await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         await send_next_profile(ctx, message, message.from_user.id)
+
+    @app.on_callback_query(filters.regex(r"^browse:start$"))
+    async def browse_start_callback(_: Client, query: CallbackQuery) -> None:
+        await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await query.answer()
+        await send_next_profile(ctx, query.message, query.from_user.id, edit=True)
 
     @app.on_message(filters.command("matches") & filters.private)
     async def matches_handler(_: Client, message: Message) -> None:
@@ -58,6 +72,7 @@ def register(app: Client, ctx: AppContext) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         language = user.get("language")
         viewer_profile = await ctx.profiles.get(query.from_user.id)
+        matched = False
 
         if action == "like" and not profile_is_complete(viewer_profile):
             await query.answer(t(language, "like_requires_profile"), show_alert=True)
@@ -66,6 +81,7 @@ def register(app: Client, ctx: AppContext) -> None:
         if action == "like":
             await ctx.actions.add(query.from_user.id, target_id, "like")
             if await ctx.actions.has_action(target_id, query.from_user.id, "like"):
+                matched = True
                 await ctx.matches.create(query.from_user.id, target_id)
                 target_profile = await ctx.profiles.get(target_id) or {}
                 target_user = await ctx.users.get_by_telegram_id(target_id) or {}
@@ -85,17 +101,17 @@ def register(app: Client, ctx: AppContext) -> None:
                     else:
                         await client.send_message(target_id, t(target_lang, "contact_missing"))
             else:
-                await query.message.reply_text(t(language, "liked"))
+                await query.answer(t(language, "liked"))
         elif action == "pass":
             await ctx.actions.add(query.from_user.id, target_id, "pass")
-            await query.message.reply_text(t(language, "passed"))
+            await query.answer(t(language, "passed"))
         elif action == "report":
             await ctx.actions.add(query.from_user.id, target_id, "report")
-            await query.message.reply_text(t(language, "reported"))
+            await query.answer(t(language, "reported"), show_alert=True)
         elif action == "block":
             await ctx.actions.add(query.from_user.id, target_id, "block")
-            await query.message.reply_text(t(language, "blocked"))
+            await query.answer(t(language, "blocked"), show_alert=True)
 
-        await query.answer()
-        await send_next_profile(ctx, query.message, query.from_user.id)
-
+        if matched:
+            await query.answer()
+        await send_next_profile(ctx, query.message, query.from_user.id, edit=True)

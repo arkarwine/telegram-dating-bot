@@ -7,6 +7,7 @@ from bot.context import AppContext
 from bot.database import create_client, ensure_indexes, get_database
 from bot.handlers import register_handlers
 from bot.location import LocationResolver
+from bot.menu import setup_bot_menu
 from bot.repositories import ActionsRepo, AdminEventsRepo, MatchesRepo, ProfilesRepo, UsersRepo
 
 
@@ -38,6 +39,7 @@ async def main() -> None:
     )
     register_handlers(app, ctx)
     await app.start()
+    await setup_bot_menu(app)
     logging.info("Telegram dating bot started.")
     await idle()
     await app.stop()

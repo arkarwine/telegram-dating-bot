@@ -14,21 +14,31 @@ async def prompt_profile_step(
     user_id: int,
     language: str | None,
     step: str | None,
+    edit: bool = False,
 ) -> None:
     if not step:
         await ctx.users.set_profile_setup_step(user_id, None)
-        await message.reply_text(t(language, "profile_complete"))
+        if edit:
+            await message.edit_text(t(language, "profile_complete"))
+        else:
+            await message.reply_text(t(language, "profile_complete"))
         return
 
     await ctx.users.set_profile_setup_step(user_id, step)
     if step == "gender":
-        await message.reply_text(t(language, "profile_step_gender"), reply_markup=gender_keyboard())
+        text = t(language, "profile_step_gender")
+        markup = gender_keyboard()
     elif step == "interested_in":
-        await message.reply_text(
-            t(language, "profile_step_interested_in"), reply_markup=interested_in_keyboard()
-        )
+        text = t(language, "profile_step_interested_in")
+        markup = interested_in_keyboard()
     else:
-        await message.reply_text(t(language, f"profile_step_{step}"))
+        text = t(language, f"profile_step_{step}")
+        markup = None
+
+    if edit:
+        await message.edit_text(text, reply_markup=markup)
+    else:
+        await message.reply_text(text, reply_markup=markup)
 
 
 async def continue_profile_setup(
@@ -38,14 +48,17 @@ async def continue_profile_setup(
     language: str | None,
     profile: dict,
     completed_step: str,
+    edit: bool = False,
 ) -> None:
     if profile_is_complete(profile):
         await ctx.users.set_profile_setup_step(user_id, None)
-        await message.reply_text(t(language, "profile_complete"))
+        if edit:
+            await message.edit_text(t(language, "profile_complete"))
+        else:
+            await message.reply_text(t(language, "profile_complete"))
         return
-    await message.reply_text(t(language, "profile_saved_step"))
     await prompt_profile_step(
-        ctx, message, user_id, language, next_step_after(profile, completed_step)
+        ctx, message, user_id, language, next_step_after(profile, completed_step), edit=edit
     )
 
 
@@ -76,6 +89,7 @@ def register(app: Client, ctx: AppContext) -> None:
             query.from_user.id,
             user.get("language"),
             next_missing_step(profile) or "display_name",
+            edit=True,
         )
 
     @app.on_callback_query(filters.regex(r"^profile:(gender|interested_in):(female|male|other|any)$"))
@@ -86,11 +100,15 @@ def register(app: Client, ctx: AppContext) -> None:
         expected_step = user.get("profile_setup_step")
         if expected_step != field:
             await query.answer()
-            await prompt_profile_step(ctx, query.message, query.from_user.id, language, expected_step)
+            await prompt_profile_step(
+                ctx, query.message, query.from_user.id, language, expected_step, edit=True
+            )
             return
         profile = await ctx.profiles.update_fields(query.from_user.id, {field: value})
         await query.answer()
-        await continue_profile_setup(ctx, query.message, query.from_user.id, language, profile, field)
+        await continue_profile_setup(
+            ctx, query.message, query.from_user.id, language, profile, field, edit=True
+        )
 
     @app.on_message(filters.photo & filters.private)
     async def photo_handler(_: Client, message: Message) -> None:
@@ -114,17 +132,23 @@ def register(app: Client, ctx: AppContext) -> None:
                 ctx, message, message.from_user.id, language, user["profile_setup_step"]
             )
             return
-        await message.reply_text(t(language, "location_processing"))
+        status_message = await message.reply_text(t(language, "location_processing"))
         resolved = await ctx.locations.resolve(message.location.latitude, message.location.longitude)
         if not resolved or not resolved.is_myanmar:
-            await message.reply_text(t(language, "location_rejected"))
+            await status_message.edit_text(t(language, "location_rejected"))
             return
         profile = await ctx.profiles.update_fields(
             message.from_user.id, {"location": resolved.to_profile_location()}
         )
         place = display_place(profile.get("location"))
-        await message.reply_text(t(language, "location_saved", place=place))
-        await continue_profile_setup(ctx, message, message.from_user.id, language, profile, "location")
+        if profile_is_complete(profile):
+            await ctx.users.set_profile_setup_step(message.from_user.id, None)
+            await status_message.edit_text(t(language, "profile_complete_with_location", place=place))
+        else:
+            await status_message.edit_text(t(language, "location_saved", place=place))
+            await continue_profile_setup(
+                ctx, message, message.from_user.id, language, profile, "location"
+            )
 
     @app.on_message(filters.text & filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "admin", "reports", "ban", "unban"]))
     async def profile_text_handler(_: Client, message: Message) -> None:
@@ -136,6 +160,9 @@ def register(app: Client, ctx: AppContext) -> None:
         text = (message.text or "").strip()
         fields: dict[str, object] = {}
         if step == "display_name":
+            if not text:
+                await message.reply_text(t(language, "profile_step_display_name"))
+                return
             fields["display_name"] = text[:80]
         elif step == "age":
             try:
@@ -148,6 +175,9 @@ def register(app: Client, ctx: AppContext) -> None:
                 return
             fields["age"] = age
         elif step == "bio":
+            if len(text) < 10:
+                await message.reply_text(t(language, "profile_invalid_bio"))
+                return
             fields["bio"] = text[:500]
         else:
             await prompt_profile_step(ctx, message, message.from_user.id, language, step)

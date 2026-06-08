@@ -11,12 +11,11 @@ def profile_card(profile: dict[str, Any], anonymous: bool = False) -> str:
     gender = profile.get("gender") or "?"
     bio = profile.get("bio") or ""
     place = display_place(profile.get("location"))
-    prefix = "Preview" if anonymous else "Profile"
-    return f"{prefix}: {name}, {age}\nGender: {gender}\nLocation: {place}\n\n{bio}"
+    prefix = "👀 Preview" if anonymous else "💌 Profile"
+    return f"{prefix}: {name}, {age}\n\n🧭 {place}\n✨ {gender}\n\n“{bio}”"
 
 
 def completion_status(profile: dict[str, Any] | None) -> str:
     if profile_is_complete(profile):
         return "complete"
     return "incomplete"
-

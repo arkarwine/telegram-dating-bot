@@ -12,8 +12,20 @@ def language_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def welcome_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("💘 Set up profile", callback_data="profile:start")],
+            [
+                InlineKeyboardButton("👀 Browse", callback_data="browse:start"),
+                InlineKeyboardButton("🌐 Language", callback_data="settings:language"),
+            ],
+        ]
+    )
+
+
 def profile_start_keyboard(complete: bool) -> InlineKeyboardMarkup:
-    label = "Edit Profile" if complete else "Set Up Profile"
+    label = "✨ Edit Profile" if complete else "✨ Set Up Profile"
     return InlineKeyboardMarkup([[InlineKeyboardButton(label, callback_data="profile:start")]])
 
 
