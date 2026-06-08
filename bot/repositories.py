@@ -43,6 +43,14 @@ class UsersRepo:
             {"telegram_id": telegram_id}, {"$set": {"language": language, "updated_at": utcnow()}}
         )
 
+    async def set_profile_setup_step(self, telegram_id: int, step: str | None) -> None:
+        update: dict[str, Any]
+        if step:
+            update = {"$set": {"profile_setup_step": step, "updated_at": utcnow()}}
+        else:
+            update = {"$unset": {"profile_setup_step": ""}, "$set": {"updated_at": utcnow()}}
+        await self.db.users.update_one({"telegram_id": telegram_id}, update)
+
     async def increment_preview(self, telegram_id: int) -> int:
         user = await self.db.users.find_one_and_update(
             {"telegram_id": telegram_id},

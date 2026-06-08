@@ -12,6 +12,38 @@ def language_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def profile_start_keyboard(complete: bool) -> InlineKeyboardMarkup:
+    label = "Edit Profile" if complete else "Set Up Profile"
+    return InlineKeyboardMarkup([[InlineKeyboardButton(label, callback_data="profile:start")]])
+
+
+def gender_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("Female", callback_data="profile:gender:female"),
+                InlineKeyboardButton("Male", callback_data="profile:gender:male"),
+            ],
+            [InlineKeyboardButton("Other", callback_data="profile:gender:other")],
+        ]
+    )
+
+
+def interested_in_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("Women", callback_data="profile:interested_in:female"),
+                InlineKeyboardButton("Men", callback_data="profile:interested_in:male"),
+            ],
+            [
+                InlineKeyboardButton("Other", callback_data="profile:interested_in:other"),
+                InlineKeyboardButton("Anyone", callback_data="profile:interested_in:any"),
+            ],
+        ]
+    )
+
+
 def browse_keyboard(target_id: int, can_like: bool) -> InlineKeyboardMarkup:
     first_row = []
     if can_like:
@@ -26,4 +58,3 @@ def browse_keyboard(target_id: int, can_like: bool) -> InlineKeyboardMarkup:
             ],
         ]
     )
-

@@ -9,11 +9,16 @@ MESSAGES = {
             "/help - show help"
         ),
         "language_saved": "Language saved.",
-        "profile_help": (
-            "Send profile details like this:\n"
-            "Name: Aye\nAge: 24\nGender: female\nInterested: male\nBio: Coffee and books\n\n"
-            "Then send one photo and use Telegram's location button."
-        ),
+        "profile_help": "Use the button below and I will walk you through profile setup.",
+        "profile_step_display_name": "What name should people see on your profile?",
+        "profile_step_age": "How old are you? Send a number.",
+        "profile_step_gender": "Choose your gender.",
+        "profile_step_interested_in": "Who would you like to meet?",
+        "profile_step_bio": "Write a short bio.",
+        "profile_step_photo": "Send one profile photo.",
+        "profile_step_location": "Use Telegram's built-in location button to send your Myanmar location.",
+        "profile_saved_step": "Saved.",
+        "profile_invalid_age": "Please send a valid age number.",
         "profile_incomplete": "Your profile needs a photo, bio, age, gender, interested-in, and Myanmar location before matching.",
         "profile_complete": "Your profile is complete. You can now like profiles and match.",
         "photo_saved": "Photo saved.",
@@ -46,11 +51,16 @@ MESSAGES = {
             "/help - အကူအညီ"
         ),
         "language_saved": "ဘာသာစကား သိမ်းပြီးပါပြီ။",
-        "profile_help": (
-            "ပရိုဖိုင်ကို ဒီပုံစံနဲ့ပို့ပါ:\n"
-            "Name: Aye\nAge: 24\nGender: female\nInterested: male\nBio: Coffee and books\n\n"
-            "ပြီးရင် ဓာတ်ပုံတစ်ပုံနဲ့ Telegram location ပို့ပါ။"
-        ),
+        "profile_help": "အောက်က button ကိုနှိပ်ပါ။ ပရိုဖိုင်ဖြည့်တာကို တစ်ဆင့်ချင်း လမ်းညွှန်ပေးပါမယ်။",
+        "profile_step_display_name": "ပရိုဖိုင်မှာ ပြမယ့်နာမည်ကို ပို့ပါ။",
+        "profile_step_age": "အသက်ကို ဂဏန်းနဲ့ ပို့ပါ။",
+        "profile_step_gender": "Gender ရွေးပါ။",
+        "profile_step_interested_in": "ဘယ်သူတွေနဲ့ တွေ့ချင်ပါသလဲ။",
+        "profile_step_bio": "Bio အတိုလေးရေးပို့ပါ။",
+        "profile_step_photo": "ပရိုဖိုင်ဓာတ်ပုံတစ်ပုံ ပို့ပါ။",
+        "profile_step_location": "Telegram ရဲ့ built-in location button နဲ့ မြန်မာနိုင်ငံ location ပို့ပါ။",
+        "profile_saved_step": "သိမ်းပြီးပါပြီ။",
+        "profile_invalid_age": "အသက်ကို မှန်ကန်တဲ့ ဂဏန်းနဲ့ ပို့ပါ။",
         "profile_incomplete": "Match လုပ်ရန် ဓာတ်ပုံ၊ bio၊ အသက်၊ gender၊ interested-in နဲ့ မြန်မာနိုင်ငံ location လိုအပ်ပါတယ်။",
         "profile_complete": "ပရိုဖိုင်ပြည့်စုံပါပြီ။ Like နဲ့ match လုပ်နိုင်ပါပြီ။",
         "photo_saved": "ဓာတ်ပုံ သိမ်းပြီးပါပြီ။",
@@ -80,4 +90,3 @@ def t(language: str | None, key: str, **kwargs: object) -> str:
     lang = language if language in MESSAGES else "en"
     template = MESSAGES[lang].get(key, MESSAGES["en"][key])
     return template.format(**kwargs)
-
