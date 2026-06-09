@@ -83,6 +83,24 @@ class UsersRepo:
             }
         await self.db.users.update_one({"telegram_id": telegram_id}, update)
 
+    async def set_chat_request(
+        self, telegram_id: int, requester_id: int | None, requester_name: str | None = None
+    ) -> None:
+        if requester_id is None:
+            update = {
+                "$unset": {"chat_request_from_id": "", "chat_request_from_name": ""},
+                "$set": {"updated_at": utcnow()},
+            }
+        else:
+            update = {
+                "$set": {
+                    "chat_request_from_id": requester_id,
+                    "chat_request_from_name": requester_name,
+                    "updated_at": utcnow(),
+                }
+            }
+        await self.db.users.update_one({"telegram_id": telegram_id}, update)
+
     async def increment_preview(self, telegram_id: int) -> int:
         user = await self.db.users.find_one_and_update(
             {"telegram_id": telegram_id},
@@ -226,6 +244,9 @@ class MatchesRepo:
 
     async def delete_for_user(self, user_id: int) -> None:
         await self.db.matches.delete_many({"user_ids": user_id})
+
+    async def delete_between(self, user_a: int, user_b: int) -> None:
+        await self.db.matches.delete_one({"user_ids": sorted([user_a, user_b])})
 
 
 class AdminEventsRepo:

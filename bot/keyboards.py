@@ -12,8 +12,8 @@ def language_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
             [
-                InlineKeyboardButton("English", callback_data="lang:en"),
-                InlineKeyboardButton("မြန်မာ", callback_data="lang:my"),
+                InlineKeyboardButton("🇬🇧 English", callback_data="lang:en"),
+                InlineKeyboardButton("🇲🇲 မြန်မာ", callback_data="lang:my"),
             ],
             [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
@@ -215,7 +215,7 @@ def match_actions_keyboard(user_id: int, username: str | None = None) -> InlineK
     direct_url = f"https://t.me/{username}" if username else None
     return InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("💬 Open private chat", callback_data=f"match:message:{user_id}")],
+            [InlineKeyboardButton("💬 Request private chat", callback_data=f"match:message:{user_id}")],
             [
                 InlineKeyboardButton("↗️ Direct message", url=direct_url)
                 if direct_url
@@ -223,6 +223,7 @@ def match_actions_keyboard(user_id: int, username: str | None = None) -> InlineK
                     "↗️ Direct message", callback_data=f"match:direct_unavailable:{user_id}"
                 )
             ],
+            [InlineKeyboardButton("💔 Unmatch", callback_data=f"match:unmatch_confirm:{user_id}")],
             [InlineKeyboardButton("💘 My matches", callback_data="matches:show")],
             [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
@@ -234,4 +235,34 @@ def active_chat_keyboard(name: str) -> ReplyKeyboardMarkup:
         [[KeyboardButton("💘 Matches"), KeyboardButton("✖️ Exit chat")]],
         resize_keyboard=True,
         is_persistent=True,
+    )
+
+
+def chat_request_keyboard(user_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("✅ Accept", callback_data=f"match:request_accept:{user_id}"),
+                InlineKeyboardButton("Not now", callback_data=f"match:request_reject:{user_id}"),
+            ],
+            [InlineKeyboardButton("💔 Unmatch", callback_data=f"match:unmatch_confirm:{user_id}")],
+        ]
+    )
+
+
+def chat_ended_keyboard(user_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("💬 Request another chat", callback_data=f"match:message:{user_id}")],
+            [InlineKeyboardButton("💘 My matches", callback_data="matches:show")],
+        ]
+    )
+
+
+def unmatch_confirm_keyboard(user_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Yes, unmatch", callback_data=f"match:unmatch:{user_id}")],
+            [InlineKeyboardButton("Keep match", callback_data=f"match:view:{user_id}")],
+        ]
     )

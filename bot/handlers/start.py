@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+from pyrogram.types import CallbackQuery, Message
 
 from bot.chat_sessions import close_chat_session
 from bot.context import AppContext
@@ -18,12 +18,6 @@ def register(app: Client, ctx: AppContext) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         if user.get("relay_target_id"):
             await close_chat_session(client, ctx, query.from_user.id)
-            cleanup = await query.message.reply_text(
-                t(user.get("language"), "chat_closed"),
-                reply_markup=ReplyKeyboardRemove(),
-                quote=False,
-            )
-            await cleanup.delete()
         await query.answer()
         if getattr(query.message, "photo", None):
             await query.message.reply_text(

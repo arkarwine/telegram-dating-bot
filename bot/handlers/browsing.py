@@ -2,19 +2,19 @@ from pyrogram import Client, filters
 from pyrogram.errors import RPCError
 from pyrogram.types import CallbackQuery, InputMediaPhoto, Message, ReplyKeyboardRemove
 
-from bot.chat_sessions import close_chat_session, open_chat_session
+from bot.chat_sessions import close_chat_session, display_name, send_safe, start_chat_session
 from bot.context import AppContext
 from bot.formatters import profile_card
 from bot.i18n import t
 from bot.keyboards import (
     admin_report_keyboard,
     browse_keyboard,
-    active_chat_keyboard,
     home_keyboard,
     incoming_heart_keyboard,
+    chat_request_keyboard,
     match_actions_keyboard,
     matches_keyboard,
-    welcome_keyboard,
+    unmatch_confirm_keyboard,
 )
 from bot.matching import next_candidate
 from bot.models import profile_is_complete
@@ -101,12 +101,6 @@ def register(app: Client, ctx: AppContext) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         if user.get("relay_target_id"):
             await close_chat_session(client, ctx, query.from_user.id)
-            cleanup = await query.message.reply_text(
-                t(user.get("language"), "chat_closed"),
-                reply_markup=ReplyKeyboardRemove(),
-                quote=False,
-            )
-            await cleanup.delete()
         await query.answer()
         text, markup = await matches_view(query.from_user.id, user.get("language"))
         await query.message.edit_text(
@@ -121,14 +115,98 @@ def register(app: Client, ctx: AppContext) -> None:
         if not await ctx.matches.get_between(query.from_user.id, target_id):
             await query.answer(t(user.get("language"), "not_a_match"), show_alert=True)
             return
-        target_profile = await ctx.profiles.get(target_id) or {}
-        target_name = target_profile.get("display_name") or "your match"
-        await open_chat_session(client, ctx, query.from_user.id, target_id, target_name)
+        target_user = await ctx.users.get_by_telegram_id(target_id) or {}
+        if user.get("relay_target_id"):
+            key = "chat_already_active" if user.get("relay_target_id") == target_id else "chat_request_busy_self"
+            await query.answer(t(user.get("language"), key), show_alert=True)
+            return
+        if target_user.get("relay_target_id"):
+            await query.answer(t(user.get("language"), "chat_request_busy"), show_alert=True)
+            return
+        if target_user.get("chat_request_from_id"):
+            await query.answer(t(user.get("language"), "chat_request_pending"), show_alert=True)
+            return
+        requester_name = await display_name(ctx, query.from_user.id)
+        await ctx.users.set_chat_request(target_id, query.from_user.id, requester_name)
+        await query.answer(t(user.get("language"), "chat_request_sent"), show_alert=True)
+        await send_safe(
+            client,
+            target_id,
+            t(target_user.get("language"), "chat_request_received", name=requester_name),
+            chat_request_keyboard(query.from_user.id),
+        )
+
+    @app.on_callback_query(filters.regex(r"^match:request_accept:\d+$"))
+    async def chat_request_accept(client: Client, query: CallbackQuery) -> None:
+        requester_id = int(query.data.rsplit(":", 1)[1])
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        if user.get("chat_request_from_id") != requester_id:
+            await query.answer(t(user.get("language"), "chat_request_expired"), show_alert=True)
+            return
+        if not await ctx.matches.get_between(query.from_user.id, requester_id):
+            await ctx.users.set_chat_request(query.from_user.id, None)
+            await query.answer(t(user.get("language"), "not_a_match"), show_alert=True)
+            return
+        requester = await ctx.users.get_by_telegram_id(requester_id) or {}
+        if user.get("relay_target_id") or requester.get("relay_target_id"):
+            await ctx.users.set_chat_request(query.from_user.id, None)
+            await query.answer(t(user.get("language"), "chat_request_busy"), show_alert=True)
+            return
         await query.answer()
-        await query.message.reply_text(
-            t(user.get("language"), "chat_opened", name=target_name),
-            reply_markup=active_chat_keyboard(target_name),
-            quote=False,
+        await query.message.edit_text(t(user.get("language"), "chat_request_accepted"))
+        await start_chat_session(client, ctx, requester_id, query.from_user.id)
+
+    @app.on_callback_query(filters.regex(r"^match:request_reject:\d+$"))
+    async def chat_request_reject(client: Client, query: CallbackQuery) -> None:
+        requester_id = int(query.data.rsplit(":", 1)[1])
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        if user.get("chat_request_from_id") != requester_id:
+            await query.answer(t(user.get("language"), "chat_request_expired"), show_alert=True)
+            return
+        await ctx.users.set_chat_request(query.from_user.id, None)
+        await query.answer(t(user.get("language"), "chat_request_rejected_local"))
+        await query.message.edit_text(t(user.get("language"), "chat_request_rejected_local"))
+        requester = await ctx.users.get_by_telegram_id(requester_id) or {}
+        await send_safe(
+            client,
+            requester_id,
+            t(
+                requester.get("language"),
+                "chat_request_rejected_remote",
+                name=await display_name(ctx, query.from_user.id),
+            ),
+        )
+
+    @app.on_callback_query(filters.regex(r"^match:unmatch_confirm:\d+$"))
+    async def unmatch_confirm_callback(_: Client, query: CallbackQuery) -> None:
+        target_id = int(query.data.rsplit(":", 1)[1])
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await query.answer()
+        await query.message.edit_text(
+            t(user.get("language"), "unmatch_confirm"),
+            reply_markup=unmatch_confirm_keyboard(target_id),
+        )
+
+    @app.on_callback_query(filters.regex(r"^match:unmatch:\d+$"))
+    async def unmatch_callback(client: Client, query: CallbackQuery) -> None:
+        target_id = int(query.data.rsplit(":", 1)[1])
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        if not await ctx.matches.get_between(query.from_user.id, target_id):
+            await query.answer(t(user.get("language"), "not_a_match"), show_alert=True)
+            return
+        if user.get("relay_target_id") == target_id:
+            await close_chat_session(client, ctx, query.from_user.id, offer_reconnect=False)
+        await ctx.matches.delete_between(query.from_user.id, target_id)
+        await ctx.users.set_chat_request(query.from_user.id, None)
+        await ctx.users.set_chat_request(target_id, None)
+        target = await ctx.users.get_by_telegram_id(target_id) or {}
+        await query.answer()
+        await query.message.edit_text(t(user.get("language"), "unmatched"), reply_markup=home_keyboard())
+        await send_safe(
+            client,
+            target_id,
+            t(target.get("language"), "unmatched_remote", name=await display_name(ctx, query.from_user.id)),
+            home_keyboard(),
         )
 
     @app.on_callback_query(filters.regex(r"^match:view:\d+$"))
@@ -167,31 +245,16 @@ def register(app: Client, ctx: AppContext) -> None:
     @app.on_message(filters.command(["start", "help", "settings", "browse", "matches", "profile", "admin", "reports", "ban", "unban"]) & filters.private, group=-2)
     async def leave_chat_on_command(client: Client, message: Message) -> None:
         user = await ctx.users.get_by_telegram_id(message.from_user.id)
-        if user and user.get("relay_target_id") and await close_chat_session(
-            client, ctx, message.from_user.id
-        ):
-            cleanup = await message.reply_text(
-                t(user.get("language"), "chat_closed"),
-                reply_markup=ReplyKeyboardRemove(),
-                quote=False,
-            )
-            await cleanup.delete()
+        if user and user.get("relay_target_id"):
+            await close_chat_session(client, ctx, message.from_user.id)
 
     @app.on_message(filters.private & filters.regex(r"^(💘 Matches|✖️ Exit chat)$"), group=-2)
     async def chat_navigation(client: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         await close_chat_session(client, ctx, message.from_user.id)
-        cleanup = await message.reply_text(
-            t(user.get("language"), "chat_closed"), reply_markup=ReplyKeyboardRemove(), quote=False
-        )
-        await cleanup.delete()
         if message.text == "💘 Matches":
             text, markup = await matches_view(message.from_user.id, user.get("language"))
             await message.reply_text(text, reply_markup=markup, quote=False)
-        else:
-            await message.reply_text(
-                t(user.get("language"), "welcome"), reply_markup=welcome_keyboard(), quote=False
-            )
         message.stop_propagation()
 
     @app.on_message(filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "profile", "admin", "reports", "ban", "unban"]), group=-1)
@@ -201,12 +264,12 @@ def register(app: Client, ctx: AppContext) -> None:
         if not target_id:
             return
         if not await ctx.matches.get_between(message.from_user.id, target_id):
-            await close_chat_session(client, ctx, message.from_user.id)
+            await close_chat_session(client, ctx, message.from_user.id, offer_reconnect=False)
             return
         if await ctx.actions.has_action(message.from_user.id, target_id, "block") or await ctx.actions.has_action(
             target_id, message.from_user.id, "block"
         ):
-            await close_chat_session(client, ctx, message.from_user.id)
+            await close_chat_session(client, ctx, message.from_user.id, offer_reconnect=False)
             await message.reply_text(
                 t(user.get("language"), "chat_blocked"),
                 reply_markup=ReplyKeyboardRemove(),
