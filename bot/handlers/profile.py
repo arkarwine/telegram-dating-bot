@@ -177,8 +177,7 @@ async def continue_profile_setup(
 
 
 def register(app: Client, ctx: AppContext) -> None:
-    @app.on_message(filters.command("profile") & filters.private)
-    async def profile_handler(_: Client, message: Message) -> None:
+    async def show_profile_dashboard(message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         profile = await ctx.profiles.get(message.from_user.id)
         language = user.get("language")
@@ -189,6 +188,14 @@ def register(app: Client, ctx: AppContext) -> None:
                 f"{t(language, 'profile_help')}\n\n{profile_review_text(language, profile)}",
                 reply_markup=profile_start_keyboard(complete=False),
             )
+
+    @app.on_message(filters.command("profile") & filters.private)
+    async def profile_handler(_: Client, message: Message) -> None:
+        await show_profile_dashboard(message)
+
+    @app.on_message(filters.regex(r"^💘 Set up profile$") & filters.private)
+    async def profile_button_handler(_: Client, message: Message) -> None:
+        await show_profile_dashboard(message)
 
     @app.on_callback_query(filters.regex(r"^profile:start$"))
     async def profile_start_callback(_: Client, query: CallbackQuery) -> None:
@@ -408,7 +415,12 @@ def register(app: Client, ctx: AppContext) -> None:
                 ctx, message, message.from_user.id, language, profile, "location"
             )
 
-    @app.on_message(filters.text & filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "owner", "support", "updates", "profile", "admin", "reports", "ban", "unban"]))
+    @app.on_message(
+        filters.text
+        & filters.private
+        & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "owner", "support", "updates", "profile", "admin", "reports", "ban", "unban"])
+        & ~filters.regex(r"^(💘 Set up profile|👀 Browse|💬 Matches|📊 Stats|🌐 Language|👑 Owner|🛟 Support|📣 Updates)$")
+    )
     async def profile_text_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         language = user.get("language")

@@ -85,7 +85,7 @@ def register(app: Client, ctx: AppContext) -> None:
             previews=user.get("preview_count", 0),
         )
 
-    @app.on_message(filters.command("browse") & filters.private)
+    @app.on_message((filters.command("browse") | filters.regex(r"^👀 Browse$")) & filters.private)
     async def browse_handler(_: Client, message: Message) -> None:
         await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         await send_next_profile(ctx, message, message.from_user.id)
@@ -103,7 +103,7 @@ def register(app: Client, ctx: AppContext) -> None:
         await query.answer(t(user.get("language"), "browse_cache_cleared"), show_alert=True)
         await send_next_profile(ctx, query.message, query.from_user.id, edit=True)
 
-    @app.on_message(filters.command("stats") & filters.private)
+    @app.on_message((filters.command("stats") | filters.regex(r"^📊 Stats$")) & filters.private)
     async def stats_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         await message.reply_text(
@@ -133,7 +133,7 @@ def register(app: Client, ctx: AppContext) -> None:
             buttons.append((other_id, name))
         return t(language, "matches_intro"), matches_keyboard(buttons)
 
-    @app.on_message(filters.command("matches") & filters.private)
+    @app.on_message((filters.command("matches") | filters.regex(r"^💬 Matches$")) & filters.private)
     async def matches_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         text, markup = await matches_view(message.from_user.id, user.get("language"))

@@ -34,11 +34,9 @@ async def send_start_menu(
         if edit:
             await message.delete()
         return
-    if edit and getattr(message, "photo", None):
+    if edit:
         await message.reply_text(text, reply_markup=markup, quote=False)
         await message.delete()
-    elif edit:
-        await message.edit_text(text, reply_markup=markup)
     else:
         await message.reply_text(text, reply_markup=markup)
 
@@ -85,10 +83,25 @@ def register(app: Client, ctx: AppContext) -> None:
         await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         await message.reply_text(t(None, "choose_language"), reply_markup=language_keyboard())
 
+    @app.on_message(filters.regex(r"^🌐 Language$") & filters.private)
+    async def settings_button_handler(_: Client, message: Message) -> None:
+        await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
+        await message.reply_text(t(None, "choose_language"), reply_markup=language_keyboard(), quote=False)
+
     @app.on_message(filters.command(["owner", "support", "updates"]) & filters.private)
     async def info_command_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         await send_config_info(message, ctx, user.get("language"), message.command[0])
+
+    @app.on_message(filters.regex(r"^(👑 Owner|🛟 Support|📣 Updates)$") & filters.private)
+    async def info_button_handler(_: Client, message: Message) -> None:
+        user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
+        info_type = {
+            "👑 Owner": "owner",
+            "🛟 Support": "support",
+            "📣 Updates": "updates",
+        }[message.text]
+        await send_config_info(message, ctx, user.get("language"), info_type)
 
     @app.on_callback_query(filters.regex(r"^info:(owner|support|updates)$"))
     async def info_callback(_: Client, query: CallbackQuery) -> None:
