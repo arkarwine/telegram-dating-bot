@@ -71,4 +71,22 @@ def public_profile_summary(profile: dict[str, Any] | None) -> str:
         f"Photo: {'Added' if profile.get('photo_file_id') else 'Not set'}",
         f"Location: {display_place(location) if location else 'Not set'}",
     ]
+    optional_labels = {
+        "socials": "Other socials",
+        "games": "Games",
+        "zodiac": "Zodiac",
+        "height": "Height",
+        "hobbies": "Hobbies",
+        "occupation": "Occupation",
+        "sports": "Sports",
+        "education": "Education",
+        "languages": "Languages",
+        "relationship_goal": "Relationship goal",
+        "music": "Music",
+        "favorite_food": "Favorite food",
+        "weekend_style": "Ideal weekend",
+    }
+    for field, label in optional_labels.items():
+        if profile.get(field):
+            lines.append(f"{label}: {profile[field]}")
     return "\n".join(lines)

@@ -15,7 +15,7 @@ async def show_report(ctx: AppContext, message: Message, language: str | None, b
     report = await ctx.actions.next_report(before_id)
     if not report:
         if getattr(message, "photo", None):
-            await message.reply_text(t(language, "no_reports"), reply_markup=home_keyboard())
+            await message.reply_text(t(language, "no_reports"), reply_markup=home_keyboard(), quote=False)
             await message.delete()
         else:
             await message.edit_text(t(language, "no_reports"), reply_markup=home_keyboard())
@@ -28,7 +28,7 @@ async def show_report(ctx: AppContext, message: Message, language: str | None, b
     )
     markup = admin_report_keyboard(str(report["_id"]), int(report["target_id"]))
     if getattr(message, "photo", None):
-        await message.reply_text(text, reply_markup=markup)
+        await message.reply_text(text, reply_markup=markup, quote=False)
         await message.delete()
     else:
         await message.edit_text(text, reply_markup=markup)

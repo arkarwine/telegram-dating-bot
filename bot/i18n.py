@@ -10,7 +10,7 @@ MESSAGES = {
             "1. Build a short profile with photo and Myanmar location.\n"
             "2. Browse one profile at a time.\n"
             "3. Like quietly. If they like you back, it is a match.\n"
-            "4. Telegram contact appears only after both people match.\n\n"
+            "4. After matching, use direct contact or message safely through the bot.\n\n"
             "/profile - create or edit your profile\n"
             "/browse - discover people\n"
             "/matches - see mutual matches\n"
@@ -25,8 +25,13 @@ MESSAGES = {
         ),
         "profile_dashboard": "🪪 Your profile dashboard\n\nNothing here is hidden from you. This is the profile data currently saved.",
         "profile_edit_menu": "✏️ What would you like to change?\n\nPick one field. You do not need to redo the whole profile.",
+        "profile_edit_group_basics": "🪪 Basics\n\nEdit the essentials used for matching and your main profile card.",
+        "profile_edit_group_about": "✍️ About me\n\nAdd details that help people understand your day-to-day life.",
+        "profile_edit_group_lifestyle": "🎯 Lifestyle & interests\n\nShare the things that make conversation easier.",
+        "profile_edit_group_social": "🔗 Socials\n\nOptional ways people can recognize you after viewing your profile. Share only what feels comfortable.",
         "profile_collected_so_far": "🔎 Collected so far:\n\n{summary}",
         "profile_saved_review": "✅ Saved. Here is exactly what I have now:",
+        "profile_field_updated": "✅ {field} updated.\n\nYou’re back at the main menu.",
         "profile_preview": "🪪 Profile preview\nThis is how your profile looks to other people.",
         "profile_return_home": "🏠 Returning home...",
         "profile_delete_confirm": "🗑 Delete your profile?\n\nThis removes your profile, hearts, passes, and matches from the bot. This cannot be undone.",
@@ -72,6 +77,19 @@ MESSAGES = {
             "Why: this bot is only for Myanmar, and I use it to detect your region, city, town, or township automatically.\n\n"
             "Your exact coordinates are used for setup; people see the detected place, not a map pin."
         ),
+        "profile_step_socials": "🔗 Other socials\n\nOptional. Share handles you are comfortable showing, such as Instagram, TikTok, or Discord. Never include passwords or private contact details.",
+        "profile_step_games": "🎮 Games\n\nOptional. What games do you enjoy or want teammates for?",
+        "profile_step_zodiac": "♈ Zodiac sign\n\nOptional. Share your sign if it is part of your vibe.",
+        "profile_step_height": "📏 Height\n\nOptional. Use any format you prefer, such as 170 cm or 5'7\".",
+        "profile_step_hobbies": "🎨 Hobbies\n\nOptional. What do you happily spend your free time doing?",
+        "profile_step_occupation": "💼 Occupation\n\nOptional. Share your role, industry, or simply what keeps you busy.",
+        "profile_step_sports": "🏃 Sports\n\nOptional. What sports do you play, follow, or want to try?",
+        "profile_step_education": "🎓 Education\n\nOptional. Share your school, field, or learning journey if you want.",
+        "profile_step_languages": "🗣 Languages\n\nOptional. Which languages are you comfortable chatting in?",
+        "profile_step_relationship_goal": "💞 Relationship goal\n\nOptional. Say what you are hoping to find: friendship, dating, long-term, or still figuring it out.",
+        "profile_step_music": "🎵 Music\n\nOptional. Artists, genres, or songs currently on repeat.",
+        "profile_step_favorite_food": "🍜 Favorite food\n\nOptional. An easy conversation starter and possible first-date idea.",
+        "profile_step_weekend_style": "🌤 Ideal weekend\n\nOptional. Quiet café, hiking, gaming, family time, or something else?",
         "profile_invalid_age": "🎂 Please send a valid age number, like 22.",
         "profile_invalid_bio": "✍️ Please write a little more for your bio. At least 10 characters is enough.",
         "profile_incomplete": "Almost there. Your profile still needs photo, bio, age, gender, interested-in, and Myanmar location before matching.",
@@ -83,6 +101,7 @@ MESSAGES = {
         "no_candidates": "🌙 No fresh profiles right now.\n\nTry again later, or adjust your profile so matching has more room to work.",
         "no_matches": "💫 No mutual matches yet.\n\nSend a few hearts while browsing. A match appears when someone hearts you back.",
         "matches_title": "💘 Your matches",
+        "matches_intro": "💘 Your matches\n\nChoose someone to send a private message through the bot. You never need a public Telegram username.",
         "anonymous_notice": "👀 Preview mode\nComplete your profile when you are ready to like people and unlock mutual matches.",
         "like_requires_profile": "✨ Complete your profile first, then you can send likes.",
         "passed": "Skipped",
@@ -90,7 +109,13 @@ MESSAGES = {
         "incoming_heart": "❤️ Someone hearted you.\n\nYou can heart back to match, or pass if it is not your vibe.",
         "match": "💘 It’s a match with {name}!",
         "contact": "🔗 Contact: @{username}",
-        "contact_missing": "🔒 This match does not have a public Telegram username yet.",
+        "contact_missing": "💬 This match has no public username, but you can message them safely through the bot.",
+        "contact_via_bot": "💬 No public username is needed. Use the button below to reach your match through the bot.",
+        "relay_prompt": "💬 Send your message now.\n\nI’ll deliver your next message privately to this match. Your Telegram username is not required.",
+        "relay_received": "💌 New message from your match, {name}:",
+        "relay_sent": "✅ Message delivered to your match.",
+        "relay_failed": "Couldn’t deliver that message right now. They may have blocked the bot.",
+        "not_a_match": "This conversation is only available for mutual matches.",
         "blocked": "🛡️ Blocked. You will not see this profile again.",
         "reported": "🚩 Report received. Thanks for helping keep the space respectful.",
         "owner_report_received": "🚨 New profile report for review",
@@ -112,7 +137,7 @@ MESSAGES = {
             "1. ဓာတ်ပုံနဲ့ Myanmar location ပါတဲ့ ပရိုဖိုင်လေးဖြည့်ပါ။\n"
             "2. ပရိုဖိုင်တွေကို တစ်ခုချင်း ကြည့်ပါ။\n"
             "3. Like ပို့ပါ။ သူလည်း like ပြန်ပေးရင် match ဖြစ်ပါမယ်။\n"
-            "4. Telegram contact ကို နှစ်ဖက် match ဖြစ်မှ ပြပါမယ်။\n\n"
+            "4. Match ဖြစ်ရင် direct contact သို့မဟုတ် bot ကနေ private message ပို့နိုင်ပါတယ်။\n\n"
             "/profile - ပရိုဖိုင်ပြင်ရန်\n"
             "/browse - လူအသစ်တွေရှာရန်\n"
             "/matches - match များကြည့်ရန်\n"
@@ -127,8 +152,13 @@ MESSAGES = {
         ),
         "profile_dashboard": "🪪 သင့် profile dashboard\n\nသိမ်းထားတဲ့ profile data ကို အောက်မှာ အတိအကျ ပြထားပါတယ်။",
         "profile_edit_menu": "✏️ ဘာကိုပြင်ချင်ပါသလဲ။\n\nField တစ်ခုရွေးပါ။ Profile တစ်ခုလုံး ပြန်ဖြည့်စရာ မလိုပါ။",
+        "profile_edit_group_basics": "🪪 Basics\n\nMatching နဲ့ main profile card အတွက် အရေးကြီးတဲ့ field တွေပြင်ပါ။",
+        "profile_edit_group_about": "✍️ About me\n\nကိုယ့်နေ့စဉ်ဘဝအကြောင်း သိစေမယ့် optional details တွေထည့်ပါ။",
+        "profile_edit_group_lifestyle": "🎯 Lifestyle & interests\n\nစကားစတင်ရလွယ်အောင် စိတ်ဝင်စားတာတွေ မျှဝေပါ။",
+        "profile_edit_group_social": "🔗 Socials\n\nမျှဝေဖို့ အဆင်ပြေတာပဲ ထည့်ပါ။",
         "profile_collected_so_far": "🔎 လက်ရှိ သိမ်းထားတာ:\n\n{summary}",
         "profile_saved_review": "✅ သိမ်းပြီးပါပြီ။ လက်ရှိ bot မှာရှိတာက:",
+        "profile_field_updated": "✅ {field} ပြင်ပြီးပါပြီ။\n\nMain menu ကို ပြန်ရောက်ပါပြီ။",
         "profile_preview": "🪪 Profile preview\nအခြားသူတွေမြင်ရမယ့် သင့် profile ပုံစံပါ။",
         "profile_return_home": "🏠 Home ကို ပြန်နေပါတယ်...",
         "profile_delete_confirm": "🗑 Profile ဖျက်မလား။\n\nProfile၊ hearts၊ passes နဲ့ matches တွေကို ဖျက်ပါမယ်။ ပြန်ယူလို့မရပါ။",
@@ -185,6 +215,7 @@ MESSAGES = {
         "no_candidates": "🌙 လောလောဆယ် ပရိုဖိုင်အသစ်မရှိသေးပါ။\n\nနောက်မှ ထပ်စမ်းပါ၊ ဒါမှမဟုတ် matching ပိုလွယ်အောင် profile ကို ပြင်နိုင်ပါတယ်။",
         "no_matches": "💫 Mutual match မရှိသေးပါ။\n\nBrowse လုပ်ပြီး hearts ပို့ပါ။ တစ်ဖက်က heart back လုပ်ရင် match ဖြစ်ပါမယ်။",
         "matches_title": "💘 သင့် matches",
+        "matches_intro": "💘 သင့် matches\n\nBot ကနေ private message ပို့ရန် match တစ်ယောက်ရွေးပါ။ Public Telegram username မလိုပါ။",
         "anonymous_notice": "👀 Preview mode\nLike နဲ့ mutual match လုပ်ချင်ရင် ပရိုဖိုင်အရင်ဖြည့်ပါ။",
         "like_requires_profile": "✨ Like ပို့ရန် ပရိုဖိုင်အရင်ဖြည့်ပါ။",
         "passed": "ကျော်လိုက်ပါပြီ",
@@ -192,7 +223,13 @@ MESSAGES = {
         "incoming_heart": "❤️ တစ်ယောက်က သင့်ကို heart ပေးထားပါတယ်။\n\nစိတ်ဝင်စားရင် heart back လုပ်ပါ၊ မဟုတ်ရင် pass လုပ်နိုင်ပါတယ်။",
         "match": "💘 {name} နဲ့ match ဖြစ်ပါတယ်!",
         "contact": "🔗 Contact: @{username}",
-        "contact_missing": "🔒 ဒီ match မှာ public Telegram username မရှိသေးပါ။",
+        "contact_missing": "💬 Public username မရှိပေမယ့် bot ကနေ private message ပို့နိုင်ပါတယ်။",
+        "contact_via_bot": "💬 Public username မလိုပါ။ အောက်က button နဲ့ match ကို bot ကနေ message ပို့နိုင်ပါတယ်။",
+        "relay_prompt": "💬 အခုပို့ချင်တဲ့ message ကို ပို့ပါ။\n\nနောက် message တစ်ခုကို match ဆီ private ပို့ပေးပါမယ်။",
+        "relay_received": "💌 သင့် match {name} ဆီက message အသစ်:",
+        "relay_sent": "✅ Match ဆီ message ပို့ပြီးပါပြီ။",
+        "relay_failed": "အခု message ပို့လို့မရသေးပါ။ သူက bot ကို block ထားနိုင်ပါတယ်။",
+        "not_a_match": "ဒီ conversation ကို mutual match ဖြစ်မှ အသုံးပြုနိုင်ပါတယ်။",
         "blocked": "🛡️ Block လုပ်ပြီးပါပြီ။ ဒီပရိုဖိုင်ကို ထပ်မပြတော့ပါ။",
         "reported": "🚩 Report လက်ခံပြီးပါပြီ။ Space ကို safe ဖြစ်အောင် ကူညီပေးလို့ ကျေးဇူးပါ။",
         "owner_report_received": "🚨 Review လုပ်ရန် profile report အသစ်",

@@ -22,6 +22,23 @@ PROFILE_STEP_LABELS = {
     "bio": "Bio",
     "photo": "Photo",
     "location": "Location",
+    "socials": "Other socials",
+    "games": "Games",
+    "zodiac": "Zodiac sign",
+    "height": "Height",
+    "hobbies": "Hobbies",
+    "occupation": "Occupation",
+    "sports": "Sports",
+    "education": "Education",
+    "languages": "Languages",
+    "relationship_goal": "Relationship goal",
+    "music": "Music",
+    "favorite_food": "Favorite food",
+    "weekend_style": "Ideal weekend",
+}
+
+OPTIONAL_PROFILE_FIELDS = {
+    key: label for key, label in PROFILE_STEP_LABELS.items() if key not in PROFILE_SETUP_STEPS
 }
 
 

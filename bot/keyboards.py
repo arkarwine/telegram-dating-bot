@@ -1,6 +1,6 @@
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 
-from bot.profile_setup import PROFILE_STEP_LABELS, PROFILE_SETUP_STEPS
+from bot.profile_setup import OPTIONAL_PROFILE_FIELDS, PROFILE_STEP_LABELS
 
 
 def language_keyboard() -> InlineKeyboardMarkup:
@@ -21,6 +21,9 @@ def welcome_keyboard() -> InlineKeyboardMarkup:
             [InlineKeyboardButton("💘 Set up profile", callback_data="profile:start")],
             [
                 InlineKeyboardButton("👀 Browse", callback_data="browse:start"),
+                InlineKeyboardButton("💬 Matches", callback_data="matches:show"),
+            ],
+            [
                 InlineKeyboardButton("🌐 Language", callback_data="settings:language"),
             ],
         ]
@@ -50,6 +53,10 @@ def profile_start_keyboard(complete: bool) -> InlineKeyboardMarkup:
 
 def profile_step_keyboard(step: str) -> InlineKeyboardMarkup | None:
     rows: list[list[InlineKeyboardButton]] = []
+    if step in OPTIONAL_PROFILE_FIELDS:
+        rows.append(
+            [InlineKeyboardButton("Remove this field", callback_data=f"profile:clear:{step}")]
+        )
     if step != "display_name":
         rows.append([InlineKeyboardButton("⬅️ Back", callback_data="profile:back")])
     rows.append([InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")])
@@ -57,12 +64,43 @@ def profile_step_keyboard(step: str) -> InlineKeyboardMarkup | None:
 
 
 def profile_edit_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("🪪 Basics", callback_data="profile:edit_group:basics"),
+                InlineKeyboardButton("✍️ About me", callback_data="profile:edit_group:about"),
+            ],
+            [
+                InlineKeyboardButton("🎯 Lifestyle", callback_data="profile:edit_group:lifestyle"),
+                InlineKeyboardButton("🔗 Socials", callback_data="profile:edit_group:social"),
+            ],
+            [InlineKeyboardButton("⬅️ Back to profile", callback_data="profile:dashboard")],
+            [InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")],
+        ]
+    )
+
+
+def profile_edit_group_keyboard(group: str) -> InlineKeyboardMarkup:
+    groups = {
+        "basics": ["display_name", "age", "gender", "interested_in", "photo", "location"],
+        "about": ["bio", "occupation", "education", "languages", "height", "zodiac"],
+        "lifestyle": [
+            "hobbies",
+            "sports",
+            "games",
+            "music",
+            "favorite_food",
+            "weekend_style",
+            "relationship_goal",
+        ],
+        "social": ["socials"],
+    }
     rows = [
-        [InlineKeyboardButton(f"✏️ {PROFILE_STEP_LABELS[step]}", callback_data=f"profile:edit:{step}")]
-        for step in PROFILE_SETUP_STEPS
+        [InlineKeyboardButton(f"✏️ {PROFILE_STEP_LABELS[field]}", callback_data=f"profile:edit:{field}")]
+        for field in groups[group]
     ]
-    rows.append([InlineKeyboardButton("⬅️ Back to profile", callback_data="profile:dashboard")])
-    rows.append([InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")])
+    rows.append([InlineKeyboardButton("⬅️ Edit menu", callback_data="profile:edit_menu")])
+    rows.append([InlineKeyboardButton("🏠 Home", callback_data="home:start")])
     return InlineKeyboardMarkup(rows)
 
 
@@ -156,4 +194,29 @@ def admin_report_keyboard(report_id: str, target_id: int) -> InlineKeyboardMarku
             ],
             [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
+    )
+
+
+def matches_keyboard(matches: list[tuple[int, str]]) -> InlineKeyboardMarkup:
+    rows = [
+        [InlineKeyboardButton(f"💬 {name}", callback_data=f"match:message:{user_id}")]
+        for user_id, name in matches[:20]
+    ]
+    rows.append([InlineKeyboardButton("🏠 Home", callback_data="home:start")])
+    return InlineKeyboardMarkup(rows)
+
+
+def match_relay_keyboard(user_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("💬 Send a message", callback_data=f"match:message:{user_id}")],
+            [InlineKeyboardButton("💘 My matches", callback_data="matches:show")],
+            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
+        ]
+    )
+
+
+def cancel_relay_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton("Cancel", callback_data="match:message_cancel")]]
     )

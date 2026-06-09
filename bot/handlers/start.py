@@ -17,7 +17,9 @@ def register(app: Client, ctx: AppContext) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         await query.answer()
         if getattr(query.message, "photo", None):
-            await query.message.reply_text(t(user.get("language"), "welcome"), reply_markup=welcome_keyboard())
+            await query.message.reply_text(
+                t(user.get("language"), "welcome"), reply_markup=welcome_keyboard(), quote=False
+            )
             await query.message.delete()
         else:
             await query.message.edit_text(t(user.get("language"), "welcome"), reply_markup=welcome_keyboard())

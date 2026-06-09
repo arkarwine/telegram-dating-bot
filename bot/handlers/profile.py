@@ -7,6 +7,7 @@ from bot.i18n import t
 from bot.keyboards import (
     delete_profile_keyboard,
     profile_edit_keyboard,
+    profile_edit_group_keyboard,
     profile_step_keyboard,
     gender_keyboard,
     interested_in_keyboard,
@@ -22,9 +23,31 @@ def profile_review_text(language: str | None, profile: dict | None) -> str:
     return t(language, "profile_collected_so_far", summary=public_profile_summary(profile))
 
 
+async def finish_profile_edit(
+    ctx: AppContext,
+    message: Message,
+    user_id: int,
+    language: str | None,
+    field: str,
+    edit_message: bool = False,
+) -> None:
+    await ctx.users.set_profile_setup_step(user_id, None)
+    await ctx.users.set_profile_edit_mode(user_id, False)
+    text = t(language, "profile_field_updated", field=field.replace("_", " ").title())
+    if field == "location":
+        cleanup = await message.reply_text(text, reply_markup=ReplyKeyboardRemove(), quote=False)
+        await cleanup.delete()
+        await message.reply_text(t(language, "welcome"), reply_markup=welcome_keyboard(), quote=False)
+        return
+    if edit_message:
+        await message.edit_text(text, reply_markup=welcome_keyboard())
+    else:
+        await message.reply_text(text, reply_markup=welcome_keyboard(), quote=False)
+
+
 async def replace_with_text(message: Message, text: str, reply_markup=None) -> None:
     if getattr(message, "photo", None):
-        await message.reply_text(text, reply_markup=reply_markup)
+        await message.reply_text(text, reply_markup=reply_markup, quote=False)
         await message.delete()
     else:
         await message.edit_text(text, reply_markup=reply_markup)
@@ -39,9 +62,9 @@ async def show_profile_preview(
     reply_markup = profile_start_keyboard(complete=True)
     photo = profile.get("photo_file_id") or profile.get("photo_url")
     if photo:
-        await message.reply_photo(photo, caption=caption, reply_markup=reply_markup)
+        await message.reply_photo(photo, caption=caption, reply_markup=reply_markup, quote=False)
     else:
-        await message.reply_text(caption, reply_markup=reply_markup)
+        await message.reply_text(caption, reply_markup=reply_markup, quote=False)
 
 
 async def return_home(message: Message, language: str | None, remove_keyboard: bool = False) -> None:
@@ -204,7 +227,17 @@ def register(app: Client, ctx: AppContext) -> None:
             reply_markup=profile_edit_keyboard(),
         )
 
-    @app.on_callback_query(filters.regex(r"^profile:edit:(display_name|age|gender|interested_in|bio|photo|location)$"))
+    @app.on_callback_query(filters.regex(r"^profile:edit_group:(basics|about|lifestyle|social)$"))
+    async def profile_edit_group_callback(_: Client, query: CallbackQuery) -> None:
+        group = query.data.rsplit(":", 1)[1]
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await query.answer()
+        await query.message.edit_text(
+            t(user.get("language"), f"profile_edit_group_{group}"),
+            reply_markup=profile_edit_group_keyboard(group),
+        )
+
+    @app.on_callback_query(filters.regex(r"^profile:edit:(display_name|age|gender|interested_in|bio|photo|location|socials|games|zodiac|height|hobbies|occupation|sports|education|languages|relationship_goal|music|favorite_food|weekend_style)$"))
     async def profile_edit_field_callback(_: Client, query: CallbackQuery) -> None:
         step = query.data.split(":")[-1]
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
@@ -220,6 +253,21 @@ def register(app: Client, ctx: AppContext) -> None:
             step,
             edit=True,
             review=profile_review_text(language, profile),
+        )
+
+    @app.on_callback_query(filters.regex(r"^profile:clear:(socials|games|zodiac|height|hobbies|occupation|sports|education|languages|relationship_goal|music|favorite_food|weekend_style)$"))
+    async def profile_clear_field_callback(_: Client, query: CallbackQuery) -> None:
+        field = query.data.rsplit(":", 1)[1]
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await ctx.profiles.update_fields(query.from_user.id, {field: None})
+        await query.answer()
+        await finish_profile_edit(
+            ctx,
+            query.message,
+            query.from_user.id,
+            user.get("language"),
+            field,
+            edit_message=True,
         )
 
     @app.on_callback_query(filters.regex(r"^profile:back$"))
@@ -282,6 +330,11 @@ def register(app: Client, ctx: AppContext) -> None:
             return
         profile = await ctx.profiles.update_fields(query.from_user.id, {field: value})
         await query.answer()
+        if user.get("profile_edit_mode"):
+            await finish_profile_edit(
+                ctx, query.message, query.from_user.id, language, field, edit_message=True
+            )
+            return
         await continue_profile_setup(
             ctx, query.message, query.from_user.id, language, profile, field, edit=True
         )
@@ -297,6 +350,9 @@ def register(app: Client, ctx: AppContext) -> None:
             return
         photo = message.photo.file_id
         profile = await ctx.profiles.update_fields(message.from_user.id, {"photo_file_id": photo})
+        if user.get("profile_edit_mode"):
+            await finish_profile_edit(ctx, message, message.from_user.id, language, "photo")
+            return
         await continue_profile_setup(ctx, message, message.from_user.id, language, profile, "photo")
 
     @app.on_message(filters.location & filters.private)
@@ -317,6 +373,10 @@ def register(app: Client, ctx: AppContext) -> None:
             message.from_user.id, {"location": resolved.to_profile_location()}
         )
         place = display_place(profile.get("location"))
+        if user.get("profile_edit_mode"):
+            await status_message.delete()
+            await finish_profile_edit(ctx, message, message.from_user.id, language, "location")
+            return
         if profile_is_complete(profile):
             await ctx.users.set_profile_setup_step(message.from_user.id, None)
             await ctx.users.set_profile_edit_mode(message.from_user.id, False)
@@ -371,9 +431,28 @@ def register(app: Client, ctx: AppContext) -> None:
                 await message.reply_text(t(language, "profile_invalid_bio"))
                 return
             fields["bio"] = text[:500]
+        elif step in {
+            "socials",
+            "games",
+            "zodiac",
+            "height",
+            "hobbies",
+            "occupation",
+            "sports",
+            "education",
+            "languages",
+            "relationship_goal",
+            "music",
+            "favorite_food",
+            "weekend_style",
+        }:
+            fields[step] = text[:300]
         else:
             await prompt_profile_step(ctx, message, message.from_user.id, language, step)
             return
 
         profile = await ctx.profiles.update_fields(message.from_user.id, fields)
+        if user.get("profile_edit_mode"):
+            await finish_profile_edit(ctx, message, message.from_user.id, language, step)
+            return
         await continue_profile_setup(ctx, message, message.from_user.id, language, profile, step)

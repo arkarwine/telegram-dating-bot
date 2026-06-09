@@ -19,7 +19,27 @@ def profile_card(
     stats = ""
     if counts:
         stats = f"\n\n❤️ {counts.get('hearts', 0)} hearts · 🚪 {counts.get('passes', 0)} passes"
-    return f"{prefix}: {name}, {age}\n\n🧭 {place}\n✨ {gender}\n\n“{bio}”{stats}"
+    extras = []
+    extra_labels = {
+        "occupation": "💼",
+        "hobbies": "🎨",
+        "games": "🎮",
+        "sports": "🏃",
+        "zodiac": "♈",
+        "height": "📏",
+        "relationship_goal": "💞",
+        "languages": "🗣",
+        "music": "🎵",
+        "favorite_food": "🍜",
+        "weekend_style": "🌤",
+        "socials": "🔗",
+        "education": "🎓",
+    }
+    for field, icon in extra_labels.items():
+        if profile.get(field):
+            extras.append(f"{icon} {profile[field]}")
+    extra_text = f"\n\n" + "\n".join(extras) if extras else ""
+    return f"{prefix}: {name}, {age}\n\n🧭 {place}\n✨ {gender}\n\n“{bio}”{extra_text}{stats}"
 
 
 def completion_status(profile: dict[str, Any] | None) -> str:

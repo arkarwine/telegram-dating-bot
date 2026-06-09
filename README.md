@@ -7,8 +7,10 @@ Myanmar-only Telegram dating bot MVP using Python, Kurigram, and MongoDB.
 - Anonymous limited browsing.
 - Guided profile setup using a conversation flow with inline buttons where choices are needed.
 - Complete profiles with photo, bio, age, gender, interested-in gender, and Telegram shared location.
+- Optional profile details including socials, games, zodiac, height, hobbies, occupation, sports, education, languages, music, food, weekend style, and relationship goals.
 - Myanmar-only location validation with reverse geocoding and MongoDB cache.
 - Like/pass browsing, mutual matches, and contact reveal only after both users match.
+- Private bot-relayed messaging so matches can communicate without public Telegram usernames.
 - Report, block, and admin ban/unban flows.
 - English and Burmese message catalogs.
 
