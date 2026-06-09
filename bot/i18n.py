@@ -164,155 +164,169 @@ MESSAGES = {
         "unbanned": "✅ User unbanned.",
     },
     "my": {
-        "welcome": (
-            "💘 မြန်မာနိုင်ငံအတွက် dating space လေးကို ကြိုဆိုပါတယ်။\n\n"
-            "ပရိုဖိုင်တွေကို အရင် preview ကြည့်နိုင်ပါတယ်။ Like နဲ့ match လုပ်ချင်ရင်တော့ ပရိုဖိုင်ဖြည့်ရပါမယ်။ "
-            "Telegram contact ကို နှစ်ဖက်လုံး match ဖြစ်မှပဲ ပြပေးပါမယ်။"
-        ),
-        "help": (
-            "✨ အသုံးပြုပုံ\n\n"
-            "1. ဓာတ်ပုံနဲ့ Myanmar location ပါတဲ့ ပရိုဖိုင်လေးဖြည့်ပါ။\n"
-            "2. ပရိုဖိုင်တွေကို တစ်ခုချင်း ကြည့်ပါ။\n"
-            "3. Like ပို့ပါ။ သူလည်း like ပြန်ပေးရင် match ဖြစ်ပါမယ်။\n"
-            "4. Match ဖြစ်ရင် direct contact သို့မဟုတ် bot ကနေ private message ပို့နိုင်ပါတယ်။\n\n"
-            "/profile - ပရိုဖိုင်ပြင်ရန်\n"
-            "/browse - လူအသစ်တွေရှာရန်\n"
-            "/matches - match များကြည့်ရန်\n"
-            "/settings - ဘာသာစကားပြောင်းရန်"
-        ),
-        "choose_language": "🌐 ဘာသာစကားရွေးပါ။\n\n/settings မှာ နောက်မှ ပြန်ပြောင်းနိုင်ပါတယ်။",
-        "language_saved": "🌐 ဘာသာစကား ပြောင်းပြီးပါပြီ။\n\nစလိုက်ကြမယ်။",
-        "profile_help": (
-            "✨ ယုံကြည်ရလွယ်ပြီး like လုပ်ချင်စရာကောင်းတဲ့ ပရိုဖိုင်လေးလုပ်ကြမယ်။\n\n"
-            "တစ်ဆင့်ချင်း မေးပြီး step တိုင်းမှာ သိမ်းထားတဲ့ data ကို အတိအကျ ပြပေးပါမယ်။ "
-            "Back သွားနိုင်တယ်၊ နောက်မှ field တစ်ခုချင်း edit လုပ်နိုင်တယ်၊ profile ကိုလည်း delete လုပ်နိုင်ပါတယ်။"
-        ),
-        "profile_dashboard": "🪪 သင့် profile dashboard\n\nသိမ်းထားတဲ့ profile data ကို အောက်မှာ အတိအကျ ပြထားပါတယ်။",
-        "profile_edit_menu": "✏️ ဘာကိုပြင်ချင်ပါသလဲ။\n\nField တစ်ခုရွေးပါ။ Profile တစ်ခုလုံး ပြန်ဖြည့်စရာ မလိုပါ။",
-        "profile_edit_group_basics": "🪪 Basics\n\nMatching နဲ့ main profile card အတွက် အရေးကြီးတဲ့ field တွေပြင်ပါ။",
-        "profile_edit_group_about": "✍️ About me\n\nကိုယ့်နေ့စဉ်ဘဝအကြောင်း သိစေမယ့် optional details တွေထည့်ပါ။",
-        "profile_edit_group_lifestyle": "🎯 Lifestyle & interests\n\nစကားစတင်ရလွယ်အောင် စိတ်ဝင်စားတာတွေ မျှဝေပါ။",
-        "profile_edit_group_social": "🔗 Socials\n\nမျှဝေဖို့ အဆင်ပြေတာပဲ ထည့်ပါ။",
-        "profile_collected_so_far": "🔎 လက်ရှိ သိမ်းထားတာ:\n\n{summary}",
-        "profile_saved_review": "✅ သိမ်းပြီးပါပြီ။ လက်ရှိ bot မှာရှိတာက:",
-        "profile_field_updated": "✅ {field} ပြင်ပြီးပါပြီ။",
-        "profile_preview": "🪪 Profile preview\nအခြားသူတွေမြင်ရမယ့် သင့် profile ပုံစံပါ။",
-        "profile_return_home": "🏠 Home ကို ပြန်နေပါတယ်...",
-        "profile_delete_confirm": "🗑 Profile ဖျက်မလား။\n\nProfile၊ hearts၊ passes နဲ့ matches တွေကို ဖျက်ပါမယ်။ ပြန်ယူလို့မရပါ။",
-        "profile_deleted": "🗑 သင့် profile ကို ဖျက်ပြီးပါပြီ။\n\nPreview ကြည့်လို့ရသေးပြီး profile အသစ်ကို နောက်မှ ပြန်လုပ်နိုင်ပါတယ်။",
-        "profile_step_display_name": (
-            "🪪 Display name\n\n"
-            "သိမ်းမယ့်အရာ: profile မှာ ပြမယ့်နာမည်။\n"
-            "ဘာအတွက်လဲ: အခြားသူတွေ သင့်ကို ခေါ်ဖို့ friendly name လိုပါတယ်။\n\n"
-            "နာမည်တို၊ nickname သို့မဟုတ် first name ပို့ပါ။"
-        ),
-        "profile_step_age": (
-            "🎂 အသက်\n\n"
-            "သိမ်းမယ့်အရာ: အသက်ဂဏန်း။\n"
-            "ဘာအတွက်လဲ: compatible ဖြစ်တဲ့ profile တွေရှာရာမှာ ကူညီဖို့ပါ။ signup gate မဟုတ်ပါ။\n\n"
-            "22 လို ဂဏန်းပဲ ပို့ပါ။"
-        ),
-        "profile_step_gender": (
-            "🧭 Gender\n\n"
-            "သိမ်းမယ့်အရာ: profile မှာ ပြမယ့် gender label။\n"
-            "ဘာအတွက်လဲ: လူတွေ သင့် profile ကို preference နဲ့ကိုက်အောင် ရှာနိုင်ဖို့ပါ။"
-        ),
-        "profile_step_interested_in": (
-            "💞 Looking for\n\n"
-            "သိမ်းမယ့်အရာ: သင်တွေ့ချင်တဲ့သူအမျိုးအစား။\n"
-            "ဘာအတွက်လဲ: browsing ကို ပို relevant ဖြစ်အောင် ကူညီဖို့ပါ။"
-        ),
-        "profile_step_bio": (
-            "✍️ Bio\n\n"
-            "သိမ်းမယ့်အရာ: သင့်အကြောင်း စာတိုလေး။\n"
-            "ဘာအတွက်လဲ: conversation စဖို့ အကြောင်းအရာပေးဖို့ပါ။\n\n"
-            "ကိုယ့် vibe၊ စိတ်ဝင်စားတာ၊ ပြောချင်တဲ့ conversation style လေး ထည့်ရေးရင် ပိုကောင်းပါတယ်။ "
-            "အနည်းဆုံး 10 characters လိုပါတယ်။"
-        ),
-        "profile_step_photo": (
-            "📸 Photo\n\n"
-            "သိမ်းမယ့်အရာ: Telegram photo file ID တစ်ခု၊ သင့်ဖုန်းထဲက file ကို တိုက်ရိုက်မသိမ်းပါ။\n"
-            "ဘာအတွက်လဲ: ဓာတ်ပုံပါတဲ့ profile က ပိုယုံကြည်ရပြီး match chance ပိုကောင်းပါတယ်။\n\n"
-            "ရှင်းတဲ့ profile photo တစ်ပုံ ပို့ပါ။"
-        ),
-        "profile_step_location": (
-            "📍 Location\n\n"
-            "သိမ်းမယ့်အရာ: Telegram ကနေ share လုပ်တဲ့ coordinates။\n"
-            "ဘာအတွက်လဲ: ဒီ bot က မြန်မာနိုင်ငံအတွက်သာ ဖြစ်ပြီး region/city/town/township ကို auto သိအောင် သုံးပါမယ်။\n\n"
-            "သင့် exact coordinates ကို setup အတွက် သုံးပြီး၊ အခြားသူတွေက detected place ကိုပဲ မြင်ပါမယ်။"
-        ),
-        "profile_invalid_age": "🎂 အသက်ကို 22 လို ဂဏန်းနဲ့ ပို့ပါ။",
-        "profile_invalid_bio": "✍️ Bio ကို နည်းနည်းပိုရေးပေးပါ။ အနည်းဆုံး 10 characters ဆိုရပါပြီ။",
-        "profile_incomplete": "နီးပါးပြီးပါပြီ။ Match လုပ်ရန် ဓာတ်ပုံ၊ bio၊ အသက်၊ gender၊ interested-in နဲ့ Myanmar location လိုပါတယ်။",
-        "profile_complete": "🎉 ပရိုဖိုင်ပြည့်စုံပါပြီ။\n\nအခု Browse လုပ်ပြီး like/match စလုပ်နိုင်ပါပြီ။",
-        "profile_complete_with_location": "📍 Location သိပါပြီ: {place}\n\n🎉 ပရိုဖိုင်ပြည့်စုံပါပြီ။ Browse နဲ့ match စနိုင်ပါပြီ။",
-        "location_processing": "📍 Location စစ်ဆေးနေပါတယ်...",
-        "location_saved": "📍 Location သိပါပြီ: {place}။",
-        "location_rejected": "📍 ဒီ bot က မြန်မာနိုင်ငံအတွက်သာ ဖြစ်ပါတယ်။\n\nTelegram location button နဲ့ မြန်မာနိုင်ငံထဲက location ပို့ပါ။",
-        "no_candidates": "🌙 လောလောဆယ် ပရိုဖိုင်အသစ်မရှိသေးပါ။\n\nနောက်မှ ထပ်စမ်းနိုင်သလို ကြည့်ပြီးသား profile တွေကို ပြန် review လုပ်နိုင်ပါတယ်။ Review လုပ်ရင် browse history ပဲရှင်းပြီး report နဲ့ block တွေက ဆက်ရှိနေပါမယ်။",
-        "browse_cache_cleared": "🔄 Browse history ရှင်းပြီးပါပြီ။ ကြည့်ပြီးသား profile တွေကို ပြန်ပြပါမယ်။",
-        "no_matches": "💫 Mutual match မရှိသေးပါ။\n\nBrowse လုပ်ပြီး hearts ပို့ပါ။ တစ်ဖက်က heart back လုပ်ရင် match ဖြစ်ပါမယ်။",
-        "matches_title": "💘 သင့် matches",
-        "matches_intro": "💘 သင့် matches\n\nBot ကနေ private message ပို့ရန် match တစ်ယောက်ရွေးပါ။ Public Telegram username မလိုပါ။",
-        "stats_complete": "ပြည့်စုံပါတယ်",
-        "stats_incomplete": "မပြည့်စုံသေးပါ",
-        "stats": (
-            "📊 သင့် stats\n\n"
-            "Profile: {completeness}\n"
-            "Matches: {matches}\n\n"
-            "ရရှိထားတာ\n"
-            "❤️ Hearts: {hearts_received}\n"
-            "🚪 Passes: {passes_received}\n\n"
-            "သင်ပို့ထားတာ\n"
-            "❤️ Hearts: {hearts_sent}\n"
-            "🚪 Passes: {passes_sent}\n"
-            "🚩 Reports: {reports_sent}\n"
-            "🛡 Blocks: {blocks_sent}\n\n"
-            "ကြည့်ထားတဲ့ preview profiles: {previews}"
-        ),
-        "match_details": "💘 {name}\n\nMutual match ဖြစ်ရင် bot private chat ကို အမြဲသုံးနိုင်ပါတယ်။\n{direct}",
-        "direct_available": "↗️ နှစ်ယောက်လုံးမှာ public Telegram username ရှိလို့ direct message ပို့နိုင်ပါတယ်။",
-        "direct_not_available": "↗️ တစ်ယောက် သို့မဟုတ် နှစ်ယောက်လုံးမှာ public Telegram username မရှိလို့ direct message မရသေးပါ။",
-        "anonymous_notice": "👀 Preview mode\nLike နဲ့ mutual match လုပ်ချင်ရင် ပရိုဖိုင်အရင်ဖြည့်ပါ။",
-        "like_requires_profile": "✨ Like ပို့ရန် ပရိုဖိုင်အရင်ဖြည့်ပါ။",
-        "passed": "ကျော်လိုက်ပါပြီ",
-        "liked": "❤️ Heart ပို့ပြီးပါပြီ။",
-        "incoming_heart": "❤️ တစ်ယောက်က သင့်ကို heart ပေးထားပါတယ်။\n\nစိတ်ဝင်စားရင် heart back လုပ်ပါ၊ မဟုတ်ရင် pass လုပ်နိုင်ပါတယ်။",
-        "match": "💘 {name} နဲ့ match ဖြစ်ပါတယ်!",
-        "contact": "🔗 Contact: @{username}",
-        "contact_missing": "💬 Public username မရှိပေမယ့် bot ကနေ private message ပို့နိုင်ပါတယ်။",
-        "contact_via_bot": "💬 Public username မလိုပါ။ အောက်က button နဲ့ match ကို bot ကနေ message ပို့နိုင်ပါတယ်။",
-        "chat_request_sent": "Chat request ပို့ပြီးပါပြီ။ Match က accept လုပ်မှ private chat ဖွင့်ပါမယ်။",
-        "chat_request_received": "💬 {name} က သင်နဲ့ private chat စချင်ပါတယ်။\n\nအဆင်ပြေမှ Accept လုပ်ပါ။",
-        "chat_request_rejected_local": "Request ကို decline လုပ်ပြီးပါပြီ။",
-        "chat_request_accepted": "✅ Private chat request ကို accept လုပ်ပြီးပါပြီ။",
-        "chat_request_rejected_remote": "{name} က အခု private chat အတွက် မအားသေးပါ။",
-        "chat_request_expired": "ဒီ chat request က မရှိတော့ပါ။",
-        "chat_request_busy": "ဒီ match က အခြား private chat ထဲမှာရှိနေပါတယ်။ နောက်မှ ထပ်စမ်းပါ။",
-        "chat_request_busy_self": "အခြား private chat request မလုပ်ခင် လက်ရှိ chat ကနေ exit လုပ်ပါ။",
-        "chat_request_pending": "ဒီ match မှာ private-chat request တစ်ခု ရှိပြီးသားပါ။ နောက်မှ ထပ်စမ်းပါ။",
-        "chat_already_active": "ဒီ private chat ထဲမှာ ရှိနေပြီးပါပြီ။",
-        "chat_session_started": "🟢 {name} နဲ့ private chat စပါပြီ။\n\nနှစ်ယောက်လုံး accept လုပ်ထားပါတယ်။ Message တွေကို secure relay လုပ်ပြီး bot database မှာ မသိမ်းပါ။",
-        "chat_session_ended": "⚪ {name} နဲ့ private chat ပြီးသွားပါပြီ။",
-        "chat_session_after_end": "နောက်မှ chat ထပ် request လုပ်နိုင်သလို matches ကို ပြန်ကြည့်နိုင်ပါတယ်။",
-        "chat_incoming": "💬 {name} ဆီက private message အသစ်",
-        "chat_blocked": "တစ်ယောက်က တစ်ယောက်ကို block ထားလို့ ဒီ private chat ကို အသုံးမပြုနိုင်ပါ။",
-        "relay_received": "💌 သင့် match {name} ဆီက message အသစ်:",
-        "relay_failed": "အခု message ပို့လို့မရသေးပါ။ သူက bot ကို block ထားနိုင်ပါတယ်။",
-        "direct_unavailable": "Direct message အတွက် နှစ်ယောက်လုံးမှာ public Telegram username ရှိရပါမယ်။ Bot ကနေ private chat ဆက်လုပ်နိုင်ပါတယ်။ Direct message ဖွင့်ရန် Telegram Settings မှာ username ထည့်ပါ။",
-        "not_a_match": "ဒီ conversation ကို mutual match ဖြစ်မှ အသုံးပြုနိုင်ပါတယ်။",
-        "unmatch_confirm": "💔 Unmatch လုပ်မလား။\n\nMatch ကိုဖျက်ပြီး active private chat ရှိရင်လည်း ပိတ်ပါမယ်။ Bot ကနေ တစ်ယောက်နဲ့တစ်ယောက် message ပို့လို့မရတော့ပါ။",
-        "unmatched": "Match မဖြစ်တော့ပါ။",
-        "unmatched_remote": "{name} က သင်တို့ match ကို အဆုံးသတ်လိုက်ပါတယ်။",
-        "blocked": "🛡️ Block လုပ်ပြီးပါပြီ။ ဒီပရိုဖိုင်ကို ထပ်မပြတော့ပါ။",
-        "reported": "🚩 Report လက်ခံပြီးပါပြီ။ Space ကို safe ဖြစ်အောင် ကူညီပေးလို့ ကျေးဇူးပါ။",
-        "owner_report_received": "🚨 Review လုပ်ရန် profile report အသစ်",
-        "report_review": "🚨 Report review",
-        "not_admin": "🔐 Admin access လိုအပ်ပါတယ်။",
-        "admin_help": "🛠 Admin\n\n/reports - report များ\n/ban <telegram_id> - ban\n/unban <telegram_id> - unban",
-        "no_reports": "✅ Report မရှိသေးပါ။",
-        "banned": "🛑 User ကို ban လုပ်ပြီးပါပြီ။",
-        "unbanned": "✅ User ကို unban လုပ်ပြီးပါပြီ။",
+    "welcome": (
+        "💘 မင်္ဂလာပါ၊ မြန်မာ dating space မှကြိုဆိုပါသည်။\n\n"
+        "Profile များကို အရင်ကြည့်နိုင်သော်လည်း like နှင့် match များကို profile ပြီးမှသာ သုံးနိုင်မည်။ "
+        "သင့် Telegram contact ကို mutual match ဖြစ်မှသာ ထုတ်ပြမည်။"
+    ),
+    "help": (
+        "✨ အသုံးပြုပုံ\n\n"
+        "1. ဓာတ်ပုံနှင့် မြန်မာနေရာဖြင့် profile တိုတောင်းလေးတစ်ခု ပြုလုပ်ပါ။\n"
+        "2. Profile တစ်ခုချင်စီ ကြည့်ရှုပါ။\n"
+        "3. တိတ်တဆိတ် like လုပ်ပါ။ သူတို့ ပြန် like လုပ်လျှင် match ဖြစ်သည်။\n"
+        "4. Match ဖြစ်ပြီးနောက် တိုက်ရိုက်ဆက်သွယ်နိုင်သည် သို့မဟုတ် bot မှတဆင့် စိတ်ချစွာ message ပို့နိုင်သည်။\n\n"
+        "/profile - profile ဖန်တီးခြင်း သို့မဟုတ် ပြင်ဆင်ခြင်း\n"
+        "/browse - လူများ ရှာဖွေကြည့်ရှုခြင်း\n"
+        "/matches - mutual match များ ကြည့်ရှုခြင်း\n"
+        "/settings - ဘာသာစကား ပြောင်းလဲခြင်း"
+    ),
+    "choose_language": "🌐 ဘာသာစကားရွေးချယ်ပါ။\n\n/settings မှ နောက်မှလည်း ပြောင်းနိုင်သည်။",
+    "language_saved": "🌐 ဘာသာစကား သိမ်းဆည်းပြီးပါပြီ။\n\nသင်အဆင်သင့်ဖြစ်သည်နှင့် စတင်နိုင်ပါပြီ။",
+    "profile_help": (
+        "✨ လူများ ယုံကြည်ရလွယ်ပြီး ကြိုက်နှစ်သက်ရလွယ်သော profile တစ်ခု ပြုလုပ်ကြပါစို့။\n\n"
+        "တစ်ကြိမ်လျှင် တစ်ခုစီ မေးပါမည်၊ တစ်ဆင့်စီပြီးတိုင်း သိမ်းဆည်းထားသည့် အချက်အလက်များကို ပြသမည်။ "
+        "နောက်ပြန်သွားနိုင်သည်၊ field တစ်ခုချင်စီ နောက်မှ ပြင်နိုင်သည်၊ သို့မဟုတ် profile ကို ဖျက်နိုင်သည်။"
+    ),
+    "profile_dashboard": "🪪 သင့် profile dashboard\n\nသင်မသိသည့် အချက်အလက်ဟူ၍ မရှိပါ။ ယခုသိမ်းဆည်းထားသော profile အချက်အလက်များဖြစ်သည်။",
+    "profile_edit_menu": "✏️ ဘာကို ပြင်ချင်သနည်း?\n\nField တစ်ခု ရွေးပါ။ Profile တစ်ခုလုံး ပြန်လုပ်ရန် မလိုပါ။",
+    "profile_edit_group_basics": "🪪 အခြေခံ\n\nMatching နှင့် profile card အဓိကအတွက် အချက်အလက်များ ပြင်ဆင်ပါ။",
+    "profile_edit_group_about": "✍️ ကိုယ်ရေးအကြောင်း\n\nနေ့စဉ်ဘဝ နားလည်ရန် အထောက်အကူဖြစ်သော အသေးစိတ်အချက်များ ထည့်ပါ။",
+    "profile_edit_group_lifestyle": "🎯 နေထိုင်မှုပုံစံ & စိတ်ဝင်စားမှုများ\n\nစကားပြောရလွယ်ကူစေမည့် အချက်များ မျှဝေပါ။",
+    "profile_edit_group_social": "🔗 Social media\n\nProfile ကြည့်ပြီးနောက် လူများ သင့်ကို မှတ်မိနိုင်ရန် optional နည်းလမ်းများ။ သက်သောင့်သက်သာ ခံစားရသည်များကိုသာ မျှဝေပါ။",
+    "profile_collected_so_far": "🔎 ယခုအချိန်ထိ ရောက်ပြီးသား:\n\n{summary}",
+    "profile_saved_review": "✅ သိမ်းဆည်းပြီးပါပြီ။ ယခုရှိသည့် အချက်အလက်များ:",
+    "profile_field_updated": "✅ {field} ပြင်ဆင်ပြီးပါပြီ။",
+    "profile_preview": "🪪 Profile preview\nသင့် profile ကို အခြားသူများ မြင်ရပုံဖြစ်သည်။",
+    "profile_return_home": "🏠 မူလစာမျက်နှာသို့ ပြန်သွားနေသည်...",
+    "profile_delete_confirm": "🗑 Profile ဖျက်မည်လား?\n\nဤသည်က သင့် profile၊ heart များ၊ pass များနှင့် match များကို bot မှ ဖယ်ရှားမည်။ ပြန်ယူ၍ မရပါ။",
+    "profile_deleted": "🗑 သင့် profile ကို ဖျက်ပြီးပါပြီ။\n\nPreview များ ဆက်ကြည့်နိုင်သည်၊ သို့မဟုတ် အချိန်တန်သောအခါ profile အသစ် ဖန်တီးနိုင်သည်။",
+    "profile_step_display_name": (
+        "🪪 Display name\n\n"
+        "ရယူသည့်အချက်: Dating profile တွင် ပြသမည့် နာမည်။\n"
+        "အကြောင်းရင်း: လူများ သင့်ကို မှတ်မိနိုင်ရန် ဖော်ရွေသော နာမည်တစ်ခု လိုအပ်သည်။\n\n"
+        "နာမည်တိုတောင်း၊ nickname သို့မဟုတ် နာမည်ပထမစာလုံး ပို့ပါ။"
+    ),
+    "profile_step_age": (
+        "🎂 အသက်\n\n"
+        "ရယူသည့်အချက်: သင့်အသက် ဂဏန်း။\n"
+        "အကြောင်းရင်း: ကိုက်ညီသော profile များ ရှာဖွေရာတွင် အထောက်အကူဖြစ်သည်။ Signup အတွက် အသုံးမပြုပါ။\n\n"
+        "22 ကဲ့သို့ ဂဏန်းသာ ပို့ပါ။"
+    ),
+    "profile_step_gender": (
+        "🧭 ကျား/မ\n\n"
+        "ရယူသည့်အချက်: Profile တွင် ပြသမည့် gender label။\n"
+        "အကြောင်းရင်း: လူများ သူတို့ ရှာနေသည့် profile များ ရှာဖွေရာတွင် အထောက်အကူဖြစ်သည်။"
+    ),
+    "profile_step_interested_in": (
+        "💞 ရှာဖွေနေသည်\n\n"
+        "ရယူသည့်အချက်: သင် တွေ့ချင်သည့် သူ။\n"
+        "အကြောင်းရင်း: Browsing ကို သက်ဆိုင်ရာ ဖြစ်စေပြီး သင့် preference ပြင်ပမှ သူများအား ပြသခြင်းကို ရှောင်ရှားသည်။"
+    ),
+    "profile_step_bio": (
+        "✍️ Bio\n\n"
+        "ရယူသည့်အချက်: သင်ကိုယ်တိုင် ရေးသော စာတိုတောင်း။\n"
+        "အကြောင်းရင်း: လူများ အမှန်တကယ် စကားစပြောရန် အကြောင်းရင်း ဖန်တီးပေးသည်။\n\n"
+        "ကောင်းသော bio တစ်ခုသည် သင့် vibe၊ နှစ်သက်ရာများ သို့မဟုတ် ပြောချင်သည့် စကားအမျိုးအစားများကို ဖော်ပြသည်။ "
+        "အနည်းဆုံး စာလုံး ၁၀ လုံး ရှိရမည်။"
+    ),
+    "profile_step_photo": (
+        "📸 ဓာတ်ပုံ\n\n"
+        "ရယူသည့်အချက်: Telegram photo file ID တစ်ခု၊ ဖုန်းမှ file မဟုတ်ပါ။\n"
+        "အကြောင်းရင်း: တကယ့်ဓာတ်ပုံပါသော profile များ ပိုယုံကြည်ရပြီး match ပိုကောင်းသည်။\n\n"
+        "ရှင်းလင်းသော profile ဓာတ်ပုံ တစ်ပုံ ပို့ပါ။"
+    ),
+    "profile_step_location": (
+        "📍 တည်နေရာ\n\n"
+        "ရယူသည့်အချက်: Telegram မှတဆင့် မျှဝေသော coordinates များ။\n"
+        "အကြောင်းရင်း: ဤ bot သည် မြန်မာနိုင်ငံအတွက်သာဖြစ်ပြီး ဒေသ၊ မြို့၊ မြို့နယ် သို့မဟုတ် ရပ်ကွက် အလိုအလျောက် ရှာဖွေရန် အသုံးပြုသည်။\n\n"
+        "တိကျသော coordinates များကို setup အတွက်သာ အသုံးပြုသည်၊ လူများသည် map pin မဟုတ်ဘဲ ရှာဖွေတွေ့ရှိသောနေရာကိုသာ မြင်သည်။"
+    ),
+    "profile_step_socials": "🔗 Social media အခြားများ\n\nOptional. Instagram, TikTok, Discord ကဲ့သို့ ပြသလျှင် သက်သောင့်သက်သာ ရှိသော handle များ မျှဝေပါ။ Password များ သို့မဟုတ် ကိုယ်ပိုင် contact အချက်အလက်များ ထည့်မပါနှင့်။",
+    "profile_step_games": "🎮 ဂိမ်းများ\n\nOptional. ဘာ game များ နှစ်သက်သနည်း သို့မဟုတ် teammate ရှာဖွေလိုသနည်း?",
+    "profile_step_zodiac": "♈ ဇာတာ/Zodiac\n\nOptional. သင့် vibe ၏ တစ်စိတ်တစ်ပိုင်းဆိုလျှင် သင့် sign မျှဝေပါ။",
+    "profile_step_height": "📏 အရပ်\n\nOptional. 170 cm သို့မဟုတ် 5'7\" ကဲ့သို့ ကြိုက်ရာ format သုံးနိုင်သည်။",
+    "profile_step_hobbies": "🎨 ဝါသနာများ\n\nOptional. အားလပ်ချိန်တွင် ဘာများ ပျော်ရွှင်စွာ လုပ်ဆောင်သနည်း?",
+    "profile_step_occupation": "💼 အလုပ်အကိုင်\n\nOptional. လုပ်ငန်းနယ်ပယ် သို့မဟုတ် ရှုပ်ထွေးနေစေသော အလုပ် မျှဝေလိုပါက ဖော်ပြပါ။",
+    "profile_step_sports": "🏃 အားကစား\n\nOptional. ကစားသော၊ ကြည့်ရှုသော သို့မဟုတ် စမ်းကြည့်ချင်သော အားကစားများ?",
+    "profile_step_education": "🎓 ပညာရေး\n\nOptional. ကျောင်း၊ ဘာသာရပ် သို့မဟုတ် သင်ကြားမှုခရီးကို မျှဝေလိုပါက ဖော်ပြပါ။",
+    "profile_step_languages": "🗣 ဘာသာစကားများ\n\nOptional. ဘယ် ဘာသာစကားများဖြင့် ချောမွေ့စွာ chat လုပ်နိုင်သနည်း?",
+    "profile_step_relationship_goal": "💞 ဆက်ဆံရေး ရည်မှန်းချက်\n\nOptional. ရှာဖွေနေသည်ကို ဖော်ပြပါ: သူငယ်ချင်းဖွဲ့ခြင်း၊ dating၊ ရေရှည်ဆက်ဆံရေး သို့မဟုတ် မသေချာသေးကြောင်း ပြောနိုင်သည်။",
+    "profile_step_music": "🎵 သီချင်း\n\nOptional. ယခုထပ်ခါတလဲလဲ နားထောင်နေသော artist၊ genre သို့မဟုတ် သီချင်းများ။",
+    "profile_step_favorite_food": "🍜 အကြိုက်ဆုံး အစားအစာ\n\nOptional. စကားစပြောရန် လွယ်ကူပြီး first date အကြံဉာဏ်လည်း ဖြစ်နိုင်သည်။",
+    "profile_step_weekend_style": "🌤 အကောင်းဆုံး weekend\n\nOptional. တိတ်ဆိတ်သော café၊ တောင်တက်ခြင်း၊ gaming၊ မိသားစုနှင့် အချိန်ဖြုန်းခြင်း သို့မဟုတ် အခြားတစ်ခုခု?",
+    "profile_invalid_age": "🎂 ကျေးဇူးပြု၍ 22 ကဲ့သို့ မှန်ကန်သော အသက်ဂဏန်း ပို့ပါ။",
+    "profile_invalid_bio": "✍️ Bio အတွက် ထပ်မံ ရေးပါ။ အနည်းဆုံး စာလုံး ၁၀ လုံး ရှိရင် ရပြီ။",
+    "profile_incomplete": "နီးပြီ။ Match ဖြစ်ရန်အတွက် profile တွင် ဓာတ်ပုံ၊ bio၊ အသက်၊ ကျား/မ၊ interested-in နှင့် မြန်မာတည်နေရာ ထပ်မံ လိုအပ်သေးသည်။",
+    "profile_complete": "🎉 သင့် profile အဆင်သင့်ဖြစ်ပြီ။\n\nယခု browse လုပ်နိုင်ပြီ၊ profile များကို like လုပ်နိုင်ပြီ၊ သူများ ပြန် like လုပ်သောအခါ match ဖြစ်နိုင်ပြီ။",
+    "profile_complete_with_location": "📍 တည်နေရာ ရှာဖွေတွေ့ရှိပြီ: {place}\n\n🎉 သင့် profile အဆင်သင့်ဖြစ်ပြီ။ ယခု browse နှင့် match ဖြစ်နိုင်ပြီ။",
+    "location_processing": "📍 တည်နေရာ စစ်ဆေးနေသည်...",
+    "location_saved": "📍 တည်နေရာ ရှာဖွေတွေ့ရှိပြီ: {place}။",
+    "location_rejected": "📍 ဤ bot သည် မြန်မာနိုင်ငံအတွက်သာ ဖြစ်သည်။\n\nTelegram location button ကိုအသုံးပြုပြီး မြန်မာနိုင်ငံအတွင်းရှိ တည်နေရာ ပို့ပေးပါ။",
+    "no_candidates": "🌙 ယခုအချိန် profile အသစ်များ မရှိပါ။\n\nနောက်မှ ပြန်လာနိုင်သည်၊ သို့မဟုတ် ကြည့်ပြီးသားသူများကို ပြန်ကြည့်နိုင်သည်။ ပြန်ကြည့်ခြင်းသည် browse မှတ်တမ်းကိုသာ ရှင်းလင်းသည်၊ ထို့ကြောင့် report နှင့် block များ ဆက်ရှိမည်။",
+    "browse_cache_cleared": "🔄 Browse မှတ်တမ်း ရှင်းလင်းပြီးပါပြီ။ မြင်ပြီးသား profile များ ထပ်ပြနေသည်။",
+    "no_matches": "💫 Mutual match မရှိသေးပါ။\n\nBrowse လုပ်နေစဉ် heart အချို့ ပို့ပါ။ သူများ ပြန် heart ပို့သောအခါ match ပေါ်လာမည်။",
+    "matches_title": "💘 သင့် match များ",
+    "matches_intro": "💘 သင့် match များ\n\nBot မှတဆင့် private message ပို့ရန် တစ်ဦးကို ရွေးချယ်ပါ။ Public Telegram username မလိုအပ်ပါ။",
+    "stats_complete": "ပြည့်စုံပြီး",
+    "stats_incomplete": "မပြည့်စုံသေး",
+    "stats": (
+        "📊 သင့် stats\n\n"
+        "Profile: {completeness}\n"
+        "Matches: {matches}\n\n"
+        "လက်ခံရရှိ\n"
+        "❤️ Heart: {hearts_received}\n"
+        "🚪 Pass: {passes_received}\n\n"
+        "ပို့ပေး\n"
+        "❤️ Heart: {hearts_sent}\n"
+        "🚪 Pass: {passes_sent}\n"
+        "🚩 Report: {reports_sent}\n"
+        "🛡 Block: {blocks_sent}\n\n"
+        "Profile preview ကြည့်ရှုမှု: {previews}"
+    ),
+    "match_details": "💘 {name}\n\nMutual match များအတွက် bot private chat အမြဲရရှိနိုင်သည်။\n{direct}",
+    "direct_available": "↗️ သင်နှစ်ဦးစလုံး public Telegram username ရှိသောကြောင့် တိုက်ရိုက် message ပို့ နိုင်သည်။",
+    "direct_not_available": "↗️ တစ်ဦးဦး သို့မဟုတ် နှစ်ဦးစလုံး public Telegram username မရှိသောကြောင့် တိုက်ရိုက် message မပို့နိုင်ပါ။",
+    "anonymous_notice": "👀 Preview mode\nLike လုပ်ပြီး mutual match ရရှိရန် profile ကို အဆင်သင့်ဖြစ်သောအခါ ပြည့်စုံအောင် ဖြည့်ပါ။",
+    "like_requires_profile": "✨ Like ပို့နိုင်ရန် profile ကို အရင်ပြည့်စုံအောင် ဖြည့်ပါ။",
+    "passed": "ကျော်လွှားပြီး",
+    "liked": "❤️ Heart ပို့ပြီးပါပြီ။",
+    "incoming_heart": "❤️ တစ်ယောက်ယောက်က သင့်ကို heart ပို့သည်။\n\nMatch ဖြစ်ရန် ပြန် heart ပို့နိုင်သည်၊ မကိုက်ညီလျှင် pass လုပ်နိုင်သည်။",
+    "match": "💘 {name} နှင့် match ဖြစ်ပြီ!",
+    "contact": "🔗 ဆက်သွယ်ရန်: @{username}",
+    "contact_missing": "💬 ဤ match တွင် public username မရှိပါ၊ သို့သော် bot မှတဆင့် စိတ်ချစွာ message ပို့နိုင်သည်။",
+    "contact_via_bot": "💬 Public username မလိုအပ်ပါ။ Bot မှတဆင့် match နှင့် ဆက်သွယ်ရန် အောက်ပါ button ကိုသုံးပါ။",
+    "chat_request_sent": "Chat request ပို့ပြီးပါပြီ။ Match က လက်ခံမှသာ private chat ဖွင့်မည်။",
+    "chat_request_received": "💬 {name} သင်နှင့် private chat စတင်လိုသည်။\n\nသက်သောင့်သက်သာ ခံစားရသောအခါမှသာ လက်ခံပါ။",
+    "chat_request_rejected_local": "Request ငြင်းပယ်ပြီးပါပြီ။",
+    "chat_request_accepted": "✅ Private chat request လက်ခံပြီးပါပြီ။",
+    "chat_request_rejected_remote": "{name} ယခုအချိန် private chat အတွက် မရနိုင်ပါ။",
+    "chat_request_expired": "ဤ chat request သည် တော်တော်ကြာပြီဖြစ်၍ သုံး၍မရတော့ပါ။",
+    "chat_request_busy": "ဤ match သည် ယခု အခြား private chat တစ်ခုတွင် ရှိနေသည်။ နောက်မှ ထပ်ကြိုးစားပါ။",
+    "chat_request_busy_self": "အခြား private chat တစ်ခု request မပါမီ လက်ရှိ private chat မှ ထွက်ပါ။",
+    "chat_request_pending": "ဤ match တွင် pending private chat request တစ်ခု ရှိနှင့်ပြီး။ နောက်မှ ထပ်ကြိုးစားပါ။",
+    "chat_already_active": "သင်သည် ဤ private chat တွင် ရှိနှင့်ပြီး။",
+    "chat_session_started": "🟢 {name} နှင့် private chat စတင်ပြီ။\n\nနှစ်ဦးစလုံး လက်ခံပြီးပါပြီ။ Message များကို လုံခြုံစွာ relay လုပ်ပေးမည်ဖြစ်ပြီး bot database တွင် မသိမ်းဆည်းပါ။",
+    "chat_session_ended": "⚪ {name} နှင့် private chat ပြီးဆုံးပြီ။",
+    "chat_session_after_end": "နောက်မှ chat ထပ်တောင်းနိုင်သည် သို့မဟုတ် match များဆီ ပြန်သွားနိုင်သည်။",
+    "chat_incoming": "💬 {name} မှ private message အသစ်",
+    "chat_blocked": "တစ်ဦးဦးက အခြားတစ်ဦးကို block လုပ်ထားသောကြောင့် ဤ private chat မရနိုင်ပါ။",
+    "relay_received": "💌 သင့် match {name} မှ message အသစ်:",
+    "relay_failed": "ယခုအချိန် message မပေးပို့နိုင်ပါ။ သူတို့ bot ကို block ထားသည် ဖြစ်နိုင်သည်။",
+    "direct_unavailable": "တိုက်ရိုက် message ပို့ရန် နှစ်ဦးစလုံး public Telegram username လိုအပ်သည်။ Bot မှတဆင့် private chat ဆက်လုပ်နိုင်သည်။ တိုက်ရိုက် message ဖွင့်ရန် Telegram Settings တွင် public username သတ်မှတ်ပါ။",
+    "not_a_match": "ဤ chat သည် mutual match များအတွက်သာ ရရှိနိုင်သည်။",
+    "unmatch_confirm": "💔 Unmatch လုပ်မည်လား?\n\nဤသည်က match ကို ဖယ်ရှားပြီး active private chat ကို ပိတ်မည်။ Bot မှတဆင့် နောက်ထပ် message မပို့နိုင်တော့ပါ။",
+    "unmatched": "Match ဖြစ်တော့မည် မဟုတ်ပါ။",
+    "unmatched_remote": "{name} သင့်နှင့် match ကို ဖြတ်ပစ်ပြီ။",
+    "blocked": "🛡️ Block ပြီးပါပြီ။ ဤ profile ကို နောက်ထပ် ပြတော့မည် မဟုတ်ပါ။",
+    "reported": "🚩 Report လက်ခံပြီးပါပြီ။ Space ကို လေးစားစွာ ထိန်းသိမ်းရာတွင် ကူညီသည့်အတွက် ကျေးဇူးတင်ပါသည်။",
+    "owner_report_received": "🚨 Review ပြုလုပ်ရန် profile report အသစ်",
+    "report_review": "🚨 Report review",
+    "not_admin": "🔐 Admin access လိုအပ်သည်။",
+    "admin_help": "🛠 Admin\n\n/reports - နောက်ဆုံး report များ\n/ban <telegram_id> - user ကို ban\n/unban <telegram_id> - user ကို unban",
+    "no_reports": "✅ Report မတွေ့ပါ။",
+    "banned": "🛑 User ကို ban ပြီးပါပြီ။",
+    "unbanned": "✅ User ကို unban ပြီးပါပြီ။",
+
     },
 }
 
