@@ -1,5 +1,6 @@
 from pyrogram import Client, filters
-from pyrogram.types import CallbackQuery, Message
+from pyrogram.errors import RPCError
+from pyrogram.types import CallbackQuery, InputMediaPhoto, Message
 
 from bot.context import AppContext
 from bot.formatters import profile_card
@@ -19,7 +20,10 @@ async def send_next_profile(
     if not candidate:
         text = t(language, "no_candidates")
         if edit:
-            await message.edit_text(text)
+            if getattr(message, "photo", None):
+                await message.edit_caption(text)
+            else:
+                await message.edit_text(text)
         else:
             await message.reply_text(text)
         return
@@ -30,8 +34,18 @@ async def send_next_profile(
         await ctx.users.increment_preview(user_id)
         text = f"{t(language, 'anonymous_notice')}\n\n{text}"
     markup = browse_keyboard(candidate["user_id"], can_like=can_like)
-    if edit:
+    photo = candidate.get("photo_file_id") or candidate.get("photo_url")
+    if edit and getattr(message, "photo", None) and photo:
+        await message.edit_media(InputMediaPhoto(photo, caption=text), reply_markup=markup)
+    elif edit and getattr(message, "photo", None):
+        await message.edit_caption(text, reply_markup=markup)
+    elif edit and photo:
+        await message.reply_photo(photo, caption=text, reply_markup=markup)
+        await message.delete()
+    elif edit:
         await message.edit_text(text, reply_markup=markup)
+    elif photo:
+        await message.reply_photo(photo, caption=text, reply_markup=markup)
     else:
         await message.reply_text(text, reply_markup=markup)
 
@@ -48,23 +62,31 @@ def register(app: Client, ctx: AppContext) -> None:
         await query.answer()
         await send_next_profile(ctx, query.message, query.from_user.id, edit=True)
 
-    @app.on_message(filters.command("matches") & filters.private)
-    async def matches_handler(_: Client, message: Message) -> None:
-        user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
-        matches = await ctx.matches.list_for_user(message.from_user.id)
+    async def matches_text(user_id: int, language: str | None) -> str:
+        matches = await ctx.matches.list_for_user(user_id)
         if not matches:
-            await message.reply_text(t(user.get("language"), "no_candidates"))
-            return
+            return t(language, "no_matches")
         lines = []
         for match in matches:
-            other_id = next(uid for uid in match["user_ids"] if uid != message.from_user.id)
+            other_id = next(uid for uid in match["user_ids"] if uid != user_id)
             profile = await ctx.profiles.get(other_id)
             other_user = await ctx.users.get_by_telegram_id(other_id)
             name = profile.get("display_name") if profile else str(other_id)
             username = other_user.get("username") if other_user else None
-            contact = f"@{username}" if username else t(user.get("language"), "contact_missing")
+            contact = f"@{username}" if username else t(language, "contact_missing")
             lines.append(f"{name}: {contact}")
-        await message.reply_text("\n".join(lines))
+        return f"{t(language, 'matches_title')}\n\n" + "\n".join(lines)
+
+    @app.on_message(filters.command("matches") & filters.private)
+    async def matches_handler(_: Client, message: Message) -> None:
+        user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
+        await message.reply_text(await matches_text(message.from_user.id, user.get("language")))
+
+    @app.on_callback_query(filters.regex(r"^matches:show$"))
+    async def matches_callback(_: Client, query: CallbackQuery) -> None:
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await query.answer()
+        await query.message.edit_text(await matches_text(query.from_user.id, user.get("language")))
 
     async def send_hearted_profile(client: Client, target_id: int, actor_id: int) -> None:
         actor_profile = await ctx.profiles.get(actor_id)
@@ -74,17 +96,22 @@ def register(app: Client, ctx: AppContext) -> None:
         language = target_user.get("language")
         counts = await ctx.actions.counts_for_target(actor_id)
         text = f"{t(language, 'incoming_heart')}\n\n{profile_card(actor_profile, counts=counts)}"
-        if actor_profile.get("photo_file_id"):
-            await client.send_photo(
-                target_id,
-                actor_profile["photo_file_id"],
-                caption=text,
-                reply_markup=incoming_heart_keyboard(actor_id),
-            )
-        else:
-            await client.send_message(
-                target_id, text, reply_markup=incoming_heart_keyboard(actor_id)
-            )
+        try:
+            photo = actor_profile.get("photo_file_id") or actor_profile.get("photo_url")
+            if photo:
+                await client.send_photo(
+                    target_id,
+                    photo,
+                    caption=text,
+                    reply_markup=incoming_heart_keyboard(actor_id),
+                )
+            else:
+                await client.send_message(
+                    target_id, text, reply_markup=incoming_heart_keyboard(actor_id)
+                )
+        except RPCError:
+            # Seeded profiles and users who blocked the bot are not reachable chats.
+            return
 
     @app.on_callback_query(filters.regex(r"^(heart|like|pass|report|block):\d+$"))
     async def browse_callback(client: Client, query: CallbackQuery) -> None:
@@ -118,11 +145,14 @@ def register(app: Client, ctx: AppContext) -> None:
                 if target_user:
                     target_lang = target_user.get("language")
                     viewer_name = viewer_profile.get("display_name") if viewer_profile else "Someone"
-                    await client.send_message(target_id, t(target_lang, "match", name=viewer_name))
-                    if viewer_user.get("username"):
-                        await client.send_message(target_id, t(target_lang, "contact", username=viewer_user["username"]))
-                    else:
-                        await client.send_message(target_id, t(target_lang, "contact_missing"))
+                    try:
+                        await client.send_message(target_id, t(target_lang, "match", name=viewer_name))
+                        if viewer_user.get("username"):
+                            await client.send_message(target_id, t(target_lang, "contact", username=viewer_user["username"]))
+                        else:
+                            await client.send_message(target_id, t(target_lang, "contact_missing"))
+                    except RPCError:
+                        pass
             else:
                 await query.answer(t(language, "liked"))
                 await send_hearted_profile(client, target_id, query.from_user.id)
@@ -138,5 +168,4 @@ def register(app: Client, ctx: AppContext) -> None:
 
         if matched:
             await query.answer()
-        can_edit_message = not bool(getattr(query.message, "photo", None))
-        await send_next_profile(ctx, query.message, query.from_user.id, edit=can_edit_message)
+        await send_next_profile(ctx, query.message, query.from_user.id, edit=True)

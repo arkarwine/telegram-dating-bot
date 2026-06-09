@@ -51,6 +51,12 @@ class UsersRepo:
             update = {"$unset": {"profile_setup_step": ""}, "$set": {"updated_at": utcnow()}}
         await self.db.users.update_one({"telegram_id": telegram_id}, update)
 
+    async def set_profile_edit_mode(self, telegram_id: int, editing: bool) -> None:
+        await self.db.users.update_one(
+            {"telegram_id": telegram_id},
+            {"$set": {"profile_edit_mode": editing, "updated_at": utcnow()}},
+        )
+
     async def increment_preview(self, telegram_id: int) -> int:
         user = await self.db.users.find_one_and_update(
             {"telegram_id": telegram_id},

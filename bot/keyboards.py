@@ -50,6 +50,7 @@ def profile_edit_keyboard() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(f"✏️ {PROFILE_STEP_LABELS[step]}", callback_data=f"profile:edit:{step}")]
         for step in PROFILE_SETUP_STEPS
     ]
+    rows.append([InlineKeyboardButton("⬅️ Back to profile", callback_data="profile:dashboard")])
     rows.append([InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")])
     return InlineKeyboardMarkup(rows)
 
@@ -127,6 +128,18 @@ def incoming_heart_keyboard(user_id: int) -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton("Report", callback_data=f"report:{user_id}"),
                 InlineKeyboardButton("Block", callback_data=f"block:{user_id}"),
+            ],
+        ]
+    )
+
+
+def whats_next_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("👀 Browse profiles", callback_data="browse:start")],
+            [
+                InlineKeyboardButton("✏️ Edit profile", callback_data="profile:edit_menu"),
+                InlineKeyboardButton("💘 Matches", callback_data="matches:show"),
             ],
         ]
     )

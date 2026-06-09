@@ -2,6 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 
 from bot.context import AppContext
+from bot.formatters import profile_card
 from bot.i18n import t
 from bot.keyboards import (
     delete_profile_keyboard,
@@ -11,6 +12,7 @@ from bot.keyboards import (
     interested_in_keyboard,
     location_request_keyboard,
     profile_start_keyboard,
+    whats_next_keyboard,
 )
 from bot.models import display_place, profile_is_complete, public_profile_summary
 from bot.profile_setup import next_missing_step, next_step_after, previous_step
@@ -18,6 +20,22 @@ from bot.profile_setup import next_missing_step, next_step_after, previous_step
 
 def profile_review_text(language: str | None, profile: dict | None) -> str:
     return t(language, "profile_collected_so_far", summary=public_profile_summary(profile))
+
+
+async def show_profile_preview(
+    message: Message,
+    language: str | None,
+    profile: dict,
+    remove_keyboard: bool = False,
+) -> None:
+    caption = f"{t(language, 'profile_preview')}\n\n{profile_card(profile)}"
+    reply_markup = ReplyKeyboardRemove() if remove_keyboard else None
+    photo = profile.get("photo_file_id") or profile.get("photo_url")
+    if photo:
+        await message.reply_photo(photo, caption=caption, reply_markup=reply_markup)
+    else:
+        await message.reply_text(caption, reply_markup=reply_markup)
+    await message.reply_text(t(language, "whats_next"), reply_markup=whats_next_keyboard())
 
 
 async def prompt_profile_step(
@@ -31,12 +49,15 @@ async def prompt_profile_step(
 ) -> None:
     if not step:
         await ctx.users.set_profile_setup_step(user_id, None)
+        await ctx.users.set_profile_edit_mode(user_id, False)
         profile = await ctx.profiles.get(user_id)
         text = f"{t(language, 'profile_complete')}\n\n{profile_review_text(language, profile)}"
         if edit:
             await message.edit_text(text, reply_markup=profile_start_keyboard(complete=True))
         else:
             await message.reply_text(text, reply_markup=profile_start_keyboard(complete=True))
+        if profile:
+            await show_profile_preview(message, language, profile)
         return
 
     await ctx.users.set_profile_setup_step(user_id, step)
@@ -81,11 +102,13 @@ async def continue_profile_setup(
 ) -> None:
     if profile_is_complete(profile):
         await ctx.users.set_profile_setup_step(user_id, None)
+        await ctx.users.set_profile_edit_mode(user_id, False)
         text = f"{t(language, 'profile_saved_review')}\n\n{profile_review_text(language, profile)}"
         if edit:
             await message.edit_text(text, reply_markup=profile_start_keyboard(complete=True))
         else:
             await message.reply_text(text, reply_markup=profile_start_keyboard(complete=True))
+        await show_profile_preview(message, language, profile)
         return
     review = f"{t(language, 'profile_saved_review')}\n\n{profile_review_text(language, profile)}"
     await prompt_profile_step(
@@ -123,6 +146,7 @@ def register(app: Client, ctx: AppContext) -> None:
         language = user.get("language")
         await query.answer()
         if profile_is_complete(profile):
+            await ctx.users.set_profile_edit_mode(query.from_user.id, False)
             await query.message.edit_text(
                 f"{t(language, 'profile_dashboard')}\n\n{profile_review_text(language, profile)}",
                 reply_markup=profile_start_keyboard(complete=True),
@@ -136,6 +160,20 @@ def register(app: Client, ctx: AppContext) -> None:
             next_missing_step(profile) or "display_name",
             edit=True,
         )
+        await ctx.users.set_profile_edit_mode(query.from_user.id, False)
+
+    @app.on_callback_query(filters.regex(r"^profile:dashboard$"))
+    async def profile_dashboard_callback(_: Client, query: CallbackQuery) -> None:
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        profile = await ctx.profiles.get(query.from_user.id)
+        language = user.get("language")
+        await ctx.users.set_profile_edit_mode(query.from_user.id, False)
+        await ctx.users.set_profile_setup_step(query.from_user.id, None)
+        await query.answer()
+        await query.message.edit_text(
+            f"{t(language, 'profile_dashboard')}\n\n{profile_review_text(language, profile)}",
+            reply_markup=profile_start_keyboard(complete=profile_is_complete(profile)),
+        )
 
     @app.on_callback_query(filters.regex(r"^profile:edit_menu$"))
     async def profile_edit_menu_callback(_: Client, query: CallbackQuery) -> None:
@@ -144,6 +182,7 @@ def register(app: Client, ctx: AppContext) -> None:
         language = user.get("language")
         await query.answer()
         await ctx.users.set_profile_setup_step(query.from_user.id, None)
+        await ctx.users.set_profile_edit_mode(query.from_user.id, False)
         await query.message.edit_text(
             f"{t(language, 'profile_edit_menu')}\n\n{profile_review_text(language, profile)}",
             reply_markup=profile_edit_keyboard(),
@@ -155,6 +194,7 @@ def register(app: Client, ctx: AppContext) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         profile = await ctx.profiles.get(query.from_user.id)
         language = user.get("language")
+        await ctx.users.set_profile_edit_mode(query.from_user.id, True)
         await query.answer()
         await prompt_profile_step(
             ctx,
@@ -170,8 +210,16 @@ def register(app: Client, ctx: AppContext) -> None:
     async def profile_back_callback(_: Client, query: CallbackQuery) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         language = user.get("language")
-        previous = previous_step(user.get("profile_setup_step"))
         await query.answer()
+        if user.get("profile_edit_mode"):
+            profile = await ctx.profiles.get(query.from_user.id)
+            await ctx.users.set_profile_setup_step(query.from_user.id, None)
+            await query.message.edit_text(
+                f"{t(language, 'profile_edit_menu')}\n\n{profile_review_text(language, profile)}",
+                reply_markup=profile_edit_keyboard(),
+            )
+            return
+        previous = previous_step(user.get("profile_setup_step"))
         if not previous:
             await query.message.edit_text(t(language, "profile_help"), reply_markup=profile_start_keyboard(False))
             return
@@ -195,6 +243,7 @@ def register(app: Client, ctx: AppContext) -> None:
         await ctx.actions.delete_for_user(query.from_user.id)
         await ctx.matches.delete_for_user(query.from_user.id)
         await ctx.users.set_profile_setup_step(query.from_user.id, None)
+        await ctx.users.set_profile_edit_mode(query.from_user.id, False)
         await query.answer()
         await query.message.edit_text(t(user.get("language"), "profile_deleted"), reply_markup=profile_start_keyboard(False))
 
@@ -249,15 +298,15 @@ def register(app: Client, ctx: AppContext) -> None:
         place = display_place(profile.get("location"))
         if profile_is_complete(profile):
             await ctx.users.set_profile_setup_step(message.from_user.id, None)
+            await ctx.users.set_profile_edit_mode(message.from_user.id, False)
             await status_message.edit_text(
                 f"{t(language, 'profile_complete_with_location', place=place)}\n\n"
                 f"{profile_review_text(language, profile)}",
                 reply_markup=profile_start_keyboard(True),
             )
-            await message.reply_text(t(language, "location_keyboard_removed"), reply_markup=ReplyKeyboardRemove())
+            await show_profile_preview(message, language, profile, remove_keyboard=True)
         else:
             await status_message.edit_text(t(language, "location_saved", place=place))
-            await message.reply_text(t(language, "location_keyboard_removed"), reply_markup=ReplyKeyboardRemove())
             await continue_profile_setup(
                 ctx, message, message.from_user.id, language, profile, "location"
             )

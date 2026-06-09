@@ -29,4 +29,10 @@ Run the bot:
 python -m bot.main
 ```
 
+Seed MongoDB with sample Myanmar profiles:
+
+```bash
+python -m bot.seed
+```
+
 The app expects MongoDB to be reachable from `MONGODB_URI`. You can use a local MongoDB package on the VPS or a remote managed MongoDB instance.
