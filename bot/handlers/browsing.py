@@ -430,7 +430,6 @@ def register(app: Client, ctx: AppContext) -> None:
                 await query.answer(t(language, "liked"))
                 await send_hearted_profile(client, target_id, query.from_user.id)
         elif action == "pass":
-            await ctx.actions.add(query.from_user.id, target_id, "pass")
             await query.answer(t(language, "passed"))
         elif action == "report":
             report = await ctx.actions.add(query.from_user.id, target_id, "report")
