@@ -202,6 +202,23 @@ class ActionsRepo:
                 counts["passes"] += int(doc["count"])
         return counts
 
+    async def counts_for_actor(self, actor_id: int) -> dict[str, int]:
+        pipeline = [
+            {"$match": {"actor_id": actor_id, "type": {"$in": ["heart", "like", "pass", "report", "block"]}}},
+            {"$group": {"_id": "$type", "count": {"$sum": 1}}},
+        ]
+        counts = {"hearts": 0, "passes": 0, "reports": 0, "blocks": 0}
+        async for doc in self.db.actions.aggregate(pipeline):
+            if doc["_id"] in {"heart", "like"}:
+                counts["hearts"] += int(doc["count"])
+            elif doc["_id"] == "pass":
+                counts["passes"] += int(doc["count"])
+            elif doc["_id"] == "report":
+                counts["reports"] += int(doc["count"])
+            elif doc["_id"] == "block":
+                counts["blocks"] += int(doc["count"])
+        return counts
+
     async def delete_for_user(self, user_id: int) -> None:
         await self.db.actions.delete_many({"$or": [{"actor_id": user_id}, {"target_id": user_id}]})
 

@@ -63,6 +63,26 @@ async def send_next_profile(
 
 
 def register(app: Client, ctx: AppContext) -> None:
+    async def stats_text(user_id: int, language: str | None) -> str:
+        profile = await ctx.profiles.get(user_id)
+        received = await ctx.actions.counts_for_target(user_id)
+        sent = await ctx.actions.counts_for_actor(user_id)
+        matches = await ctx.matches.list_for_user(user_id)
+        user = await ctx.users.get_by_telegram_id(user_id) or {}
+        return t(
+            language,
+            "stats",
+            completeness=t(language, "stats_complete") if profile_is_complete(profile) else t(language, "stats_incomplete"),
+            hearts_received=received["hearts"],
+            passes_received=received["passes"],
+            hearts_sent=sent["hearts"],
+            passes_sent=sent["passes"],
+            reports_sent=sent["reports"],
+            blocks_sent=sent["blocks"],
+            matches=len(matches),
+            previews=user.get("preview_count", 0),
+        )
+
     @app.on_message(filters.command("browse") & filters.private)
     async def browse_handler(_: Client, message: Message) -> None:
         await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
@@ -73,6 +93,24 @@ def register(app: Client, ctx: AppContext) -> None:
         await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         await query.answer()
         await send_next_profile(ctx, query.message, query.from_user.id, edit=True)
+
+    @app.on_message(filters.command("stats") & filters.private)
+    async def stats_handler(_: Client, message: Message) -> None:
+        user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
+        await message.reply_text(
+            await stats_text(message.from_user.id, user.get("language")),
+            reply_markup=home_keyboard(),
+            quote=False,
+        )
+
+    @app.on_callback_query(filters.regex(r"^stats:show$"))
+    async def stats_callback(_: Client, query: CallbackQuery) -> None:
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await query.answer()
+        await query.message.edit_text(
+            await stats_text(query.from_user.id, user.get("language")),
+            reply_markup=home_keyboard(),
+        )
 
     async def matches_view(user_id: int, language: str | None) -> tuple[str, object]:
         matches = await ctx.matches.list_for_user(user_id)
@@ -242,7 +280,7 @@ def register(app: Client, ctx: AppContext) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         await query.answer(t(user.get("language"), "direct_unavailable"), show_alert=True)
 
-    @app.on_message(filters.command(["start", "help", "settings", "browse", "matches", "profile", "admin", "reports", "ban", "unban"]) & filters.private, group=-2)
+    @app.on_message(filters.command(["start", "help", "settings", "browse", "matches", "stats", "profile", "admin", "reports", "ban", "unban"]) & filters.private, group=-2)
     async def leave_chat_on_command(client: Client, message: Message) -> None:
         user = await ctx.users.get_by_telegram_id(message.from_user.id)
         if user and user.get("relay_target_id"):
@@ -257,7 +295,7 @@ def register(app: Client, ctx: AppContext) -> None:
             await message.reply_text(text, reply_markup=markup, quote=False)
         message.stop_propagation()
 
-    @app.on_message(filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "profile", "admin", "reports", "ban", "unban"]), group=-1)
+    @app.on_message(filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "profile", "admin", "reports", "ban", "unban"]), group=-1)
     async def relay_message_handler(client: Client, message: Message) -> None:
         user = await ctx.users.get_by_telegram_id(message.from_user.id)
         target_id = user.get("relay_target_id") if user else None

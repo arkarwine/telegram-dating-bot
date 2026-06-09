@@ -406,7 +406,7 @@ def register(app: Client, ctx: AppContext) -> None:
                 ctx, message, message.from_user.id, language, profile, "location"
             )
 
-    @app.on_message(filters.text & filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "admin", "reports", "ban", "unban"]))
+    @app.on_message(filters.text & filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "admin", "reports", "ban", "unban"]))
     async def profile_text_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         language = user.get("language")

@@ -7,6 +7,7 @@ COMMANDS = [
     BotCommand("profile", "Set up or edit your dating profile"),
     BotCommand("browse", "Browse profile previews"),
     BotCommand("matches", "See your mutual matches"),
+    BotCommand("stats", "View your dating stats"),
     BotCommand("settings", "Change language"),
     BotCommand("help", "How the bot works"),
 ]
@@ -14,4 +15,3 @@ COMMANDS = [
 
 async def setup_bot_menu(app: Client) -> None:
     await app.set_bot_commands(COMMANDS)
-

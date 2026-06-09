@@ -102,6 +102,22 @@ MESSAGES = {
         "no_matches": "💫 No mutual matches yet.\n\nSend a few hearts while browsing. A match appears when someone hearts you back.",
         "matches_title": "💘 Your matches",
         "matches_intro": "💘 Your matches\n\nChoose someone to send a private message through the bot. You never need a public Telegram username.",
+        "stats_complete": "Complete",
+        "stats_incomplete": "Incomplete",
+        "stats": (
+            "📊 Your stats\n\n"
+            "Profile: {completeness}\n"
+            "Matches: {matches}\n\n"
+            "Received\n"
+            "❤️ Hearts: {hearts_received}\n"
+            "🚪 Passes: {passes_received}\n\n"
+            "Sent\n"
+            "❤️ Hearts: {hearts_sent}\n"
+            "🚪 Passes: {passes_sent}\n"
+            "🚩 Reports: {reports_sent}\n"
+            "🛡 Blocks: {blocks_sent}\n\n"
+            "Preview profiles viewed: {previews}"
+        ),
         "match_details": "💘 {name}\n\nBot private chat is always available for mutual matches.\n{direct}",
         "direct_available": "↗️ Direct messaging is available because both of you have public Telegram usernames.",
         "direct_not_available": "↗️ Direct messaging is unavailable because one or both of you do not have a public Telegram username.",
@@ -236,6 +252,22 @@ MESSAGES = {
         "no_matches": "💫 Mutual match မရှိသေးပါ။\n\nBrowse လုပ်ပြီး hearts ပို့ပါ။ တစ်ဖက်က heart back လုပ်ရင် match ဖြစ်ပါမယ်။",
         "matches_title": "💘 သင့် matches",
         "matches_intro": "💘 သင့် matches\n\nBot ကနေ private message ပို့ရန် match တစ်ယောက်ရွေးပါ။ Public Telegram username မလိုပါ။",
+        "stats_complete": "ပြည့်စုံပါတယ်",
+        "stats_incomplete": "မပြည့်စုံသေးပါ",
+        "stats": (
+            "📊 သင့် stats\n\n"
+            "Profile: {completeness}\n"
+            "Matches: {matches}\n\n"
+            "ရရှိထားတာ\n"
+            "❤️ Hearts: {hearts_received}\n"
+            "🚪 Passes: {passes_received}\n\n"
+            "သင်ပို့ထားတာ\n"
+            "❤️ Hearts: {hearts_sent}\n"
+            "🚪 Passes: {passes_sent}\n"
+            "🚩 Reports: {reports_sent}\n"
+            "🛡 Blocks: {blocks_sent}\n\n"
+            "ကြည့်ထားတဲ့ preview profiles: {previews}"
+        ),
         "match_details": "💘 {name}\n\nMutual match ဖြစ်ရင် bot private chat ကို အမြဲသုံးနိုင်ပါတယ်။\n{direct}",
         "direct_available": "↗️ နှစ်ယောက်လုံးမှာ public Telegram username ရှိလို့ direct message ပို့နိုင်ပါတယ်။",
         "direct_not_available": "↗️ တစ်ယောက် သို့မဟုတ် နှစ်ယောက်လုံးမှာ public Telegram username မရှိလို့ direct message မရသေးပါ။",

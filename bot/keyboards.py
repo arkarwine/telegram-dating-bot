@@ -29,6 +29,7 @@ def welcome_keyboard() -> InlineKeyboardMarkup:
                 InlineKeyboardButton("💬 Matches", callback_data="matches:show"),
             ],
             [
+                InlineKeyboardButton("📊 Stats", callback_data="stats:show"),
                 InlineKeyboardButton("🌐 Language", callback_data="settings:language"),
             ],
         ]
