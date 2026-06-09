@@ -19,7 +19,7 @@ class Settings(BaseSettings):
         default=None, validation_alias=AliasChoices("OWNER_LINK", "OWNER_URL")
     )
     support_link: str | None = Field(
-        default=None, validation_alias=AliasChoices("SUPPORT_LINK", "SUPPORT_URL")
+        default=None, validation_alias=AliasChoices("SUPPORT_LINK", "SUPPORT_URL", "GROUP_LINK", "GROUP_URL")
     )
     updates_link: str | None = Field(
         default=None, validation_alias=AliasChoices("UPDATES_LINK", "UPDATES_URL")

@@ -8,6 +8,12 @@ from pyrogram.types import (
 from bot.profile_setup import OPTIONAL_PROFILE_FIELDS, PROFILE_STEP_LABELS
 
 
+def _url_button_or_callback(label: str, value: str, callback_data: str) -> InlineKeyboardButton:
+    if value.startswith(("http://", "https://", "tg://")):
+        return InlineKeyboardButton(label, url=value)
+    return InlineKeyboardButton(label, callback_data=callback_data)
+
+
 def language_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
@@ -15,7 +21,6 @@ def language_keyboard() -> InlineKeyboardMarkup:
                 InlineKeyboardButton("🇬🇧 English", callback_data="lang:en"),
                 InlineKeyboardButton("🇲🇲 မြန်မာ", callback_data="lang:my"),
             ],
-            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -31,19 +36,31 @@ def welcome_keyboard(settings=None) -> ReplyKeyboardMarkup:
             KeyboardButton("📊 Stats"),
             KeyboardButton("🌐 Language"),
         ],
+        [KeyboardButton("🏠 Home")],
     ]
+    return ReplyKeyboardMarkup(rows, resize_keyboard=True, is_persistent=True)
+
+
+def welcome_links_keyboard(settings=None) -> InlineKeyboardMarkup | None:
     info_buttons = []
     if settings and settings.owner_link:
-        info_buttons.append(KeyboardButton("👑 Owner"))
+        info_buttons.append(
+            _url_button_or_callback("👑 Owner", settings.owner_link, "info:owner")
+        )
     if settings and settings.support_link:
-        info_buttons.append(KeyboardButton("🛟 Support"))
+        info_buttons.append(
+            _url_button_or_callback("👥 Group", settings.support_link, "info:support")
+        )
     if settings and settings.updates_link:
-        info_buttons.append(KeyboardButton("📣 Updates"))
-    if info_buttons:
-        rows.append(info_buttons[:2])
+        info_buttons.append(
+            _url_button_or_callback("📣 Updates", settings.updates_link, "info:updates")
+        )
+    if not info_buttons:
+        return None
+    rows = [info_buttons[:2]]
     if len(info_buttons) > 2:
         rows.append(info_buttons[2:])
-    return ReplyKeyboardMarkup(rows, resize_keyboard=True, is_persistent=True)
+    return InlineKeyboardMarkup(rows)
 
 
 def home_keyboard() -> InlineKeyboardMarkup:
@@ -54,7 +71,6 @@ def no_candidates_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("🔄 Review seen profiles", callback_data="browse:review_seen")],
-            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -65,13 +81,11 @@ def profile_start_keyboard(complete: bool) -> InlineKeyboardMarkup:
             [
                 [InlineKeyboardButton("✏️ Edit one field", callback_data="profile:edit_menu")],
                 [InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")],
-                [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
             ]
         )
     return InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("✨ Continue setup", callback_data="profile:start")],
-            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -125,7 +139,6 @@ def profile_edit_group_keyboard(group: str) -> InlineKeyboardMarkup:
         for field in groups[group]
     ]
     rows.append([InlineKeyboardButton("⬅️ Edit menu", callback_data="profile:edit_menu")])
-    rows.append([InlineKeyboardButton("🏠 Home", callback_data="home:start")])
     return InlineKeyboardMarkup(rows)
 
 
@@ -134,7 +147,6 @@ def delete_profile_keyboard() -> InlineKeyboardMarkup:
         [
             [InlineKeyboardButton("Yes, delete it", callback_data="profile:delete")],
             [InlineKeyboardButton("Keep my profile", callback_data="profile:edit_menu")],
-            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -189,7 +201,6 @@ def browse_keyboard(target_id: int, can_like: bool) -> InlineKeyboardMarkup:
                 InlineKeyboardButton("Report", callback_data=f"report:{target_id}"),
                 InlineKeyboardButton("Block", callback_data=f"block:{target_id}"),
             ],
-            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -205,7 +216,6 @@ def incoming_heart_keyboard(user_id: int) -> InlineKeyboardMarkup:
                 InlineKeyboardButton("Report", callback_data=f"report:{user_id}"),
                 InlineKeyboardButton("Block", callback_data=f"block:{user_id}"),
             ],
-            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -217,7 +227,6 @@ def admin_report_keyboard(report_id: str, target_id: int) -> InlineKeyboardMarku
                 InlineKeyboardButton("🛑 Ban reported user", callback_data=f"admin:report_ban:{target_id}"),
                 InlineKeyboardButton("Next ➡️", callback_data=f"admin:report_next:{report_id}"),
             ],
-            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -227,7 +236,6 @@ def matches_keyboard(matches: list[tuple[int, str]]) -> InlineKeyboardMarkup:
         [InlineKeyboardButton(f"💘 {name}", callback_data=f"match:view:{user_id}")]
         for user_id, name in matches[:20]
     ]
-    rows.append([InlineKeyboardButton("🏠 Home", callback_data="home:start")])
     return InlineKeyboardMarkup(rows)
 
 
@@ -244,8 +252,6 @@ def match_actions_keyboard(user_id: int, username: str | None = None) -> InlineK
                 )
             ],
             [InlineKeyboardButton("💔 Unmatch", callback_data=f"match:unmatch_confirm:{user_id}")],
-            [InlineKeyboardButton("💘 My matches", callback_data="matches:show")],
-            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -274,7 +280,6 @@ def chat_ended_keyboard(user_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("💬 Request another chat", callback_data=f"match:message:{user_id}")],
-            [InlineKeyboardButton("💘 My matches", callback_data="matches:show")],
         ]
     )
 

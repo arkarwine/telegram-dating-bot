@@ -295,6 +295,12 @@ def register(app: Client, ctx: AppContext) -> None:
         if user and user.get("relay_target_id"):
             await close_chat_session(client, ctx, message.from_user.id)
 
+    @app.on_message(filters.regex(r"^🏠 Home$") & filters.private, group=-2)
+    async def leave_chat_on_home_button(client: Client, message: Message) -> None:
+        user = await ctx.users.get_by_telegram_id(message.from_user.id)
+        if user and user.get("relay_target_id"):
+            await close_chat_session(client, ctx, message.from_user.id)
+
     @app.on_message(filters.private & filters.regex(r"^(💘 Matches|✖️ Exit chat)$"), group=-2)
     async def chat_navigation(client: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
@@ -304,7 +310,7 @@ def register(app: Client, ctx: AppContext) -> None:
             await message.reply_text(text, reply_markup=markup, quote=False)
         message.stop_propagation()
 
-    @app.on_message(filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "owner", "support", "updates", "profile", "admin", "reports", "ban", "unban"]), group=-1)
+    @app.on_message(filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "owner", "support", "updates", "profile", "admin", "reports", "ban", "unban"]) & ~filters.regex(r"^(💘 Set up profile|👀 Browse|💬 Matches|📊 Stats|🌐 Language|🏠 Home)$"), group=-1)
     async def relay_message_handler(client: Client, message: Message) -> None:
         user = await ctx.users.get_by_telegram_id(message.from_user.id)
         target_id = user.get("relay_target_id") if user else None

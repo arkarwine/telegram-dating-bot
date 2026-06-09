@@ -21,6 +21,7 @@ MESSAGES = {
         ),
         "choose_language": "🌐 Choose your language.\n\nYou can change this later from /settings.",
         "language_saved": "🌐 Language updated.\n\nReady when you are.",
+        "main_menu_ready": "⌨️ Main menu is ready below.",
         "profile_help": (
             "✨ Let’s make your profile easy to trust and easy to like.\n\n"
             "I’ll ask for one thing at a time and show you exactly what I have saved after each step. "
@@ -193,6 +194,7 @@ MESSAGES = {
     ),
     "choose_language": "🌐 ဘာသာစကားရွေးချယ်ပါ။\n\n/settings မှ နောက်မှလည်း ပြောင်းနိုင်သည်။",
     "language_saved": "🌐 ဘာသာစကား သိမ်းဆည်းပြီးပါပြီ။\n\nသင်အဆင်သင့်ဖြစ်သည်နှင့် စတင်နိုင်ပါပြီ။",
+    "main_menu_ready": "⌨️ Main menu ကို အောက်မှာ သုံးနိုင်ပါပြီ။",
     "profile_help": (
         "✨ လူများ ယုံကြည်ရလွယ်ပြီး ကြိုက်နှစ်သက်ရလွယ်သော profile တစ်ခု ပြုလုပ်ကြပါစို့။\n\n"
         "တစ်ကြိမ်လျှင် တစ်ခုစီ မေးပါမည်၊ တစ်ဆင့်စီပြီးတိုင်း သိမ်းဆည်းထားသည့် အချက်အလက်များကို ပြသမည်။ "

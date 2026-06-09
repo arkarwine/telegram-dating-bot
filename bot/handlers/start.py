@@ -4,7 +4,7 @@ from pyrogram.types import CallbackQuery, Message
 from bot.chat_sessions import close_chat_session
 from bot.context import AppContext
 from bot.i18n import t
-from bot.keyboards import home_keyboard, language_keyboard, welcome_keyboard
+from bot.keyboards import language_keyboard, welcome_keyboard, welcome_links_keyboard
 
 
 INFO_FIELDS = {
@@ -28,17 +28,31 @@ async def send_start_menu(
 ) -> None:
     welcome_text = t(language, "welcome")
     text = f"{notice}\n\n{welcome_text}" if notice else welcome_text
-    markup = welcome_keyboard(ctx.settings)
+    reply_markup = welcome_keyboard(ctx.settings)
+    inline_markup = welcome_links_keyboard(ctx.settings)
     if ctx.settings.start_image:
-        await message.reply_photo(ctx.settings.start_image, caption=text, reply_markup=markup, quote=False)
+        await message.reply_photo(
+            ctx.settings.start_image,
+            caption=text,
+            reply_markup=inline_markup or reply_markup,
+            quote=False,
+        )
         if edit:
             await message.delete()
+        if inline_markup:
+            await message.reply_text(t(language, "main_menu_ready"), reply_markup=reply_markup, quote=False)
+        return
+    if inline_markup:
+        await message.reply_text(text, reply_markup=inline_markup, quote=False)
+        if edit:
+            await message.delete()
+        await message.reply_text(t(language, "main_menu_ready"), reply_markup=reply_markup, quote=False)
         return
     if edit:
-        await message.reply_text(text, reply_markup=markup, quote=False)
+        await message.reply_text(text, reply_markup=reply_markup, quote=False)
         await message.delete()
     else:
-        await message.reply_text(text, reply_markup=markup)
+        await message.reply_text(text, reply_markup=reply_markup)
 
 
 async def send_config_info(
@@ -51,18 +65,25 @@ async def send_config_info(
         else t(language, f"{info_type}_not_configured")
     )
     if edit and getattr(message, "photo", None):
-        await message.reply_text(text, reply_markup=home_keyboard(), quote=False)
+        await message.reply_text(text, reply_markup=welcome_keyboard(ctx.settings), quote=False)
         await message.delete()
     elif edit:
-        await message.edit_text(text, reply_markup=home_keyboard())
+        await message.edit_text(text)
     else:
-        await message.reply_text(text, reply_markup=home_keyboard(), quote=False)
+        await message.reply_text(text, reply_markup=welcome_keyboard(ctx.settings), quote=False)
 
 
 def register(app: Client, ctx: AppContext) -> None:
     @app.on_message(filters.command("start") & filters.private)
     async def start_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
+        await send_start_menu(message, ctx, user.get("language"))
+
+    @app.on_message(filters.regex(r"^🏠 Home$") & filters.private)
+    async def home_button_handler(client: Client, message: Message) -> None:
+        user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
+        if user.get("relay_target_id"):
+            await close_chat_session(client, ctx, message.from_user.id)
         await send_start_menu(message, ctx, user.get("language"))
 
     @app.on_callback_query(filters.regex(r"^home:start$"))
@@ -76,7 +97,11 @@ def register(app: Client, ctx: AppContext) -> None:
     @app.on_message(filters.command("help") & filters.private)
     async def help_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
-        await message.reply_text(t(user.get("language"), "help"), reply_markup=home_keyboard())
+        await message.reply_text(
+            t(user.get("language"), "help"),
+            reply_markup=welcome_keyboard(ctx.settings),
+            quote=False,
+        )
 
     @app.on_message(filters.command("settings") & filters.private)
     async def settings_handler(_: Client, message: Message) -> None:
@@ -92,16 +117,6 @@ def register(app: Client, ctx: AppContext) -> None:
     async def info_command_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         await send_config_info(message, ctx, user.get("language"), message.command[0])
-
-    @app.on_message(filters.regex(r"^(👑 Owner|🛟 Support|📣 Updates)$") & filters.private)
-    async def info_button_handler(_: Client, message: Message) -> None:
-        user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
-        info_type = {
-            "👑 Owner": "owner",
-            "🛟 Support": "support",
-            "📣 Updates": "updates",
-        }[message.text]
-        await send_config_info(message, ctx, user.get("language"), info_type)
 
     @app.on_callback_query(filters.regex(r"^info:(owner|support|updates)$"))
     async def info_callback(_: Client, query: CallbackQuery) -> None:

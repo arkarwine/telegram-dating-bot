@@ -419,7 +419,7 @@ def register(app: Client, ctx: AppContext) -> None:
         filters.text
         & filters.private
         & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "owner", "support", "updates", "profile", "admin", "reports", "ban", "unban"])
-        & ~filters.regex(r"^(💘 Set up profile|👀 Browse|💬 Matches|📊 Stats|🌐 Language|👑 Owner|🛟 Support|📣 Updates)$")
+        & ~filters.regex(r"^(💘 Set up profile|👀 Browse|💬 Matches|📊 Stats|🌐 Language|🏠 Home)$")
     )
     async def profile_text_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
