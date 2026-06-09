@@ -289,7 +289,7 @@ def register(app: Client, ctx: AppContext) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         await query.answer(t(user.get("language"), "direct_unavailable"), show_alert=True)
 
-    @app.on_message(filters.command(["start", "help", "settings", "browse", "matches", "stats", "profile", "admin", "reports", "ban", "unban"]) & filters.private, group=-2)
+    @app.on_message(filters.command(["start", "help", "settings", "browse", "matches", "stats", "owner", "support", "updates", "profile", "admin", "reports", "ban", "unban"]) & filters.private, group=-2)
     async def leave_chat_on_command(client: Client, message: Message) -> None:
         user = await ctx.users.get_by_telegram_id(message.from_user.id)
         if user and user.get("relay_target_id"):
@@ -304,7 +304,7 @@ def register(app: Client, ctx: AppContext) -> None:
             await message.reply_text(text, reply_markup=markup, quote=False)
         message.stop_propagation()
 
-    @app.on_message(filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "profile", "admin", "reports", "ban", "unban"]), group=-1)
+    @app.on_message(filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "owner", "support", "updates", "profile", "admin", "reports", "ban", "unban"]), group=-1)
     async def relay_message_handler(client: Client, message: Message) -> None:
         user = await ctx.users.get_by_telegram_id(message.from_user.id)
         target_id = user.get("relay_target_id") if user else None

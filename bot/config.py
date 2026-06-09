@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +14,18 @@ class Settings(BaseSettings):
     default_language: str = Field(default="en", alias="DEFAULT_LANGUAGE")
     geocoder_base_url: str = Field(
         default="https://nominatim.openstreetmap.org", alias="GEOCODER_BASE_URL"
+    )
+    owner_link: str | None = Field(
+        default=None, validation_alias=AliasChoices("OWNER_LINK", "OWNER_URL")
+    )
+    support_link: str | None = Field(
+        default=None, validation_alias=AliasChoices("SUPPORT_LINK", "SUPPORT_URL")
+    )
+    updates_link: str | None = Field(
+        default=None, validation_alias=AliasChoices("UPDATES_LINK", "UPDATES_URL")
+    )
+    start_image: str | None = Field(
+        default=None, validation_alias=AliasChoices("START_IMAGE", "START_IMAGE_URL")
     )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
@@ -34,8 +46,15 @@ class Settings(BaseSettings):
     def validate_default_language(cls, value: str) -> str:
         return value if value in {"en", "my"} else "en"
 
+    @field_validator("owner_link", "support_link", "updates_link", "start_image", mode="before")
+    @classmethod
+    def empty_string_to_none(cls, value: object) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
+
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

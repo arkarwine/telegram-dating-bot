@@ -14,6 +14,9 @@ MESSAGES = {
             "/profile - create or edit your profile\n"
             "/browse - discover people\n"
             "/matches - see mutual matches\n"
+            "/owner - contact the owner\n"
+            "/support - get support\n"
+            "/updates - see update channel\n"
             "/settings - change language"
         ),
         "choose_language": "🌐 Choose your language.\n\nYou can change this later from /settings.",
@@ -149,6 +152,12 @@ MESSAGES = {
         "relay_received": "💌 New message from your match, {name}:",
         "relay_failed": "Couldn’t deliver that message right now. They may have blocked the bot.",
         "direct_unavailable": "Direct messaging needs both people to have public Telegram usernames. You can still chat privately through the bot. To enable direct messages, set a public username in Telegram Settings.",
+        "owner_info": "👑 Owner\n\n{value}",
+        "support_info": "🛟 Support\n\n{value}",
+        "updates_info": "📣 Updates\n\n{value}",
+        "owner_not_configured": "👑 Owner contact is not available yet.",
+        "support_not_configured": "🛟 Support is not available yet.",
+        "updates_not_configured": "📣 Updates channel is not available yet.",
         "not_a_match": "This conversation is only available for mutual matches.",
         "unmatch_confirm": "💔 Unmatch?\n\nThis removes the match and closes any active private chat. You will no longer be able to message each other through the bot.",
         "unmatched": "You are no longer matched.",
@@ -178,6 +187,9 @@ MESSAGES = {
         "/profile - profile ဖန်တီးခြင်း သို့မဟုတ် ပြင်ဆင်ခြင်း\n"
         "/browse - လူများ ရှာဖွေကြည့်ရှုခြင်း\n"
         "/matches - mutual match များ ကြည့်ရှုခြင်း\n"
+        "/owner - owner ကို ဆက်သွယ်ရန်\n"
+        "/support - support ရယူရန်\n"
+        "/updates - update channel ကြည့်ရန်\n"
         "/settings - ဘာသာစကား ပြောင်းလဲခြင်း"
     ),
     "choose_language": "🌐 ဘာသာစကားရွေးချယ်ပါ။\n\n/settings မှ နောက်မှလည်း ပြောင်းနိုင်သည်။",
@@ -313,6 +325,12 @@ MESSAGES = {
     "relay_received": "💌 သင့် match {name} မှ message အသစ်:",
     "relay_failed": "ယခုအချိန် message မပေးပို့နိုင်ပါ။ သူတို့ bot ကို block ထားသည် ဖြစ်နိုင်သည်။",
     "direct_unavailable": "တိုက်ရိုက် message ပို့ရန် နှစ်ဦးစလုံး public Telegram username လိုအပ်သည်။ Bot မှတဆင့် private chat ဆက်လုပ်နိုင်သည်။ တိုက်ရိုက် message ဖွင့်ရန် Telegram Settings တွင် public username သတ်မှတ်ပါ။",
+    "owner_info": "👑 Owner\n\n{value}",
+    "support_info": "🛟 Support\n\n{value}",
+    "updates_info": "📣 Updates\n\n{value}",
+    "owner_not_configured": "👑 Owner contact မထည့်ထားသေးပါ။",
+    "support_not_configured": "🛟 Support မထည့်ထားသေးပါ။",
+    "updates_not_configured": "📣 Updates channel မထည့်ထားသေးပါ။",
     "not_a_match": "ဤ chat သည် mutual match များအတွက်သာ ရရှိနိုင်သည်။",
     "unmatch_confirm": "💔 Unmatch လုပ်မည်လား?\n\nဤသည်က match ကို ဖယ်ရှားပြီး active private chat ကို ပိတ်မည်။ Bot မှတဆင့် နောက်ထပ် message မပို့နိုင်တော့ပါ။",
     "unmatched": "Match ဖြစ်တော့မည် မဟုတ်ပါ။",

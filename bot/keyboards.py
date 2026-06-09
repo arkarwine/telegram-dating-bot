@@ -8,6 +8,12 @@ from pyrogram.types import (
 from bot.profile_setup import OPTIONAL_PROFILE_FIELDS, PROFILE_STEP_LABELS
 
 
+def _url_button_or_callback(label: str, value: str, callback_data: str) -> InlineKeyboardButton:
+    if value.startswith(("http://", "https://", "tg://")):
+        return InlineKeyboardButton(label, url=value)
+    return InlineKeyboardButton(label, callback_data=callback_data)
+
+
 def language_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
@@ -20,20 +26,36 @@ def language_keyboard() -> InlineKeyboardMarkup:
     )
 
 
-def welcome_keyboard() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
+def welcome_keyboard(settings=None) -> InlineKeyboardMarkup:
+    rows = [
+        [InlineKeyboardButton("💘 Set up profile", callback_data="profile:start")],
         [
-            [InlineKeyboardButton("💘 Set up profile", callback_data="profile:start")],
-            [
-                InlineKeyboardButton("👀 Browse", callback_data="browse:start"),
-                InlineKeyboardButton("💬 Matches", callback_data="matches:show"),
-            ],
-            [
-                InlineKeyboardButton("📊 Stats", callback_data="stats:show"),
-                InlineKeyboardButton("🌐 Language", callback_data="settings:language"),
-            ],
-        ]
-    )
+            InlineKeyboardButton("👀 Browse", callback_data="browse:start"),
+            InlineKeyboardButton("💬 Matches", callback_data="matches:show"),
+        ],
+        [
+            InlineKeyboardButton("📊 Stats", callback_data="stats:show"),
+            InlineKeyboardButton("🌐 Language", callback_data="settings:language"),
+        ],
+    ]
+    info_buttons = []
+    if settings and settings.owner_link:
+        info_buttons.append(
+            _url_button_or_callback("👑 Owner", settings.owner_link, "info:owner")
+        )
+    if settings and settings.support_link:
+        info_buttons.append(
+            _url_button_or_callback("🛟 Support", settings.support_link, "info:support")
+        )
+    if settings and settings.updates_link:
+        info_buttons.append(
+            _url_button_or_callback("📣 Updates", settings.updates_link, "info:updates")
+        )
+    if info_buttons:
+        rows.append(info_buttons[:2])
+    if len(info_buttons) > 2:
+        rows.append(info_buttons[2:])
+    return InlineKeyboardMarkup(rows)
 
 
 def home_keyboard() -> InlineKeyboardMarkup:

@@ -13,10 +13,10 @@ from bot.keyboards import (
     interested_in_keyboard,
     location_request_keyboard,
     profile_start_keyboard,
-    welcome_keyboard,
 )
 from bot.models import display_place, profile_is_complete, public_profile_summary
 from bot.profile_setup import next_missing_step, next_step_after, previous_step
+from bot.handlers.start import send_start_menu
 
 
 def profile_review_text(language: str | None, profile: dict | None) -> str:
@@ -80,15 +80,17 @@ async def show_profile_preview(
         await message.reply_text(caption, reply_markup=reply_markup, quote=False)
 
 
-async def return_home(message: Message, language: str | None, remove_keyboard: bool = False) -> None:
+async def return_home(
+    ctx: AppContext, message: Message, language: str | None, remove_keyboard: bool = False
+) -> None:
     if remove_keyboard:
         cleanup = await message.reply_text(
             t(language, "profile_return_home"), reply_markup=ReplyKeyboardRemove()
         )
         await cleanup.delete()
-        await message.reply_text(t(language, "welcome"), reply_markup=welcome_keyboard())
+        await send_start_menu(message, ctx, language)
     else:
-        await message.reply_text(t(language, "welcome"), reply_markup=welcome_keyboard())
+        await send_start_menu(message, ctx, language)
 
 
 async def prompt_profile_step(
@@ -109,7 +111,7 @@ async def prompt_profile_step(
             await message.edit_text(text, reply_markup=profile_start_keyboard(complete=True))
         else:
             await message.reply_text(text, reply_markup=profile_start_keyboard(complete=True))
-        await return_home(message, language)
+        await return_home(ctx, message, language)
         return
 
     await ctx.users.set_profile_setup_step(user_id, step)
@@ -160,7 +162,7 @@ async def continue_profile_setup(
             await message.edit_text(text, reply_markup=profile_start_keyboard(complete=True))
         else:
             await message.reply_text(text, reply_markup=profile_start_keyboard(complete=True))
-        await return_home(message, language)
+        await return_home(ctx, message, language)
         return
     review = f"{t(language, 'profile_saved_review')}\n\n{profile_review_text(language, profile)}"
     await prompt_profile_step(
@@ -399,14 +401,14 @@ def register(app: Client, ctx: AppContext) -> None:
                 f"{t(language, 'profile_complete_with_location', place=place)}\n\n"
                 f"{profile_review_text(language, profile)}",
             )
-            await return_home(message, language, remove_keyboard=True)
+            await return_home(ctx, message, language, remove_keyboard=True)
         else:
             await status_message.edit_text(t(language, "location_saved", place=place))
             await continue_profile_setup(
                 ctx, message, message.from_user.id, language, profile, "location"
             )
 
-    @app.on_message(filters.text & filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "admin", "reports", "ban", "unban"]))
+    @app.on_message(filters.text & filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "stats", "owner", "support", "updates", "profile", "admin", "reports", "ban", "unban"]))
     async def profile_text_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
         language = user.get("language")
