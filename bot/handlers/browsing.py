@@ -5,7 +5,7 @@ from pyrogram.types import CallbackQuery, InputMediaPhoto, Message
 from bot.context import AppContext
 from bot.formatters import profile_card
 from bot.i18n import t
-from bot.keyboards import browse_keyboard, incoming_heart_keyboard
+from bot.keyboards import admin_report_keyboard, browse_keyboard, home_keyboard, incoming_heart_keyboard
 from bot.matching import next_candidate
 from bot.models import profile_is_complete
 
@@ -21,11 +21,12 @@ async def send_next_profile(
         text = t(language, "no_candidates")
         if edit:
             if getattr(message, "photo", None):
-                await message.edit_caption(text)
+                await message.reply_text(text, reply_markup=home_keyboard())
+                await message.delete()
             else:
-                await message.edit_text(text)
+                await message.edit_text(text, reply_markup=home_keyboard())
         else:
-            await message.reply_text(text)
+            await message.reply_text(text, reply_markup=home_keyboard())
         return
     can_like = profile_is_complete(viewer_profile)
     counts = await ctx.actions.counts_for_target(candidate["user_id"])
@@ -38,7 +39,8 @@ async def send_next_profile(
     if edit and getattr(message, "photo", None) and photo:
         await message.edit_media(InputMediaPhoto(photo, caption=text), reply_markup=markup)
     elif edit and getattr(message, "photo", None):
-        await message.edit_caption(text, reply_markup=markup)
+        await message.reply_text(text, reply_markup=markup)
+        await message.delete()
     elif edit and photo:
         await message.reply_photo(photo, caption=text, reply_markup=markup)
         await message.delete()
@@ -80,13 +82,19 @@ def register(app: Client, ctx: AppContext) -> None:
     @app.on_message(filters.command("matches") & filters.private)
     async def matches_handler(_: Client, message: Message) -> None:
         user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
-        await message.reply_text(await matches_text(message.from_user.id, user.get("language")))
+        await message.reply_text(
+            await matches_text(message.from_user.id, user.get("language")),
+            reply_markup=home_keyboard(),
+        )
 
     @app.on_callback_query(filters.regex(r"^matches:show$"))
     async def matches_callback(_: Client, query: CallbackQuery) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         await query.answer()
-        await query.message.edit_text(await matches_text(query.from_user.id, user.get("language")))
+        await query.message.edit_text(
+            await matches_text(query.from_user.id, user.get("language")),
+            reply_markup=home_keyboard(),
+        )
 
     async def send_hearted_profile(client: Client, target_id: int, actor_id: int) -> None:
         actor_profile = await ctx.profiles.get(actor_id)
@@ -160,8 +168,23 @@ def register(app: Client, ctx: AppContext) -> None:
             await ctx.actions.add(query.from_user.id, target_id, "pass")
             await query.answer(t(language, "passed"))
         elif action == "report":
-            await ctx.actions.add(query.from_user.id, target_id, "report")
+            report = await ctx.actions.add(query.from_user.id, target_id, "report")
             await query.answer(t(language, "reported"), show_alert=True)
+            target_profile = await ctx.profiles.get(target_id) or {}
+            owner_text = (
+                f"{t(None, 'owner_report_received')}\n\n"
+                f"Reporter: {query.from_user.id}\nReported user: {target_id}\n\n"
+                f"{profile_card(target_profile)}"
+            )
+            for admin_id in ctx.settings.admin_ids:
+                try:
+                    await client.send_message(
+                        admin_id,
+                        owner_text,
+                        reply_markup=admin_report_keyboard(str(report["_id"]), target_id),
+                    )
+                except RPCError:
+                    pass
         elif action == "block":
             await ctx.actions.add(query.from_user.id, target_id, "block")
             await query.answer(t(language, "blocked"), show_alert=True)

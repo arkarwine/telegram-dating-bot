@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from bson import ObjectId
 from pymongo import ReturnDocument
 
 from bot.models import profile_is_complete, utcnow
@@ -112,7 +113,9 @@ class ActionsRepo:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
 
-    async def add(self, actor_id: int, target_id: int, action_type: str, reason: str | None = None) -> None:
+    async def add(
+        self, actor_id: int, target_id: int, action_type: str, reason: str | None = None
+    ) -> dict[str, Any]:
         await self.db.actions.update_one(
             {"actor_id": actor_id, "target_id": target_id, "type": action_type},
             {
@@ -120,6 +123,9 @@ class ActionsRepo:
                 "$setOnInsert": {"created_at": utcnow()},
             },
             upsert=True,
+        )
+        return await self.db.actions.find_one(
+            {"actor_id": actor_id, "target_id": target_id, "type": action_type}
         )
 
     async def has_action(self, actor_id: int, target_id: int, action_type: str) -> bool:
@@ -159,6 +165,12 @@ class ActionsRepo:
     async def latest_reports(self, limit: int = 10) -> list[dict[str, Any]]:
         cursor = self.db.actions.find({"type": "report"}).sort("created_at", -1).limit(limit)
         return [doc async for doc in cursor]
+
+    async def next_report(self, before_id: str | None = None) -> dict[str, Any] | None:
+        query: dict[str, Any] = {"type": "report"}
+        if before_id:
+            query["_id"] = {"$lt": ObjectId(before_id)}
+        return await self.db.actions.find_one(query, sort=[("created_at", -1)])
 
 
 class MatchesRepo:

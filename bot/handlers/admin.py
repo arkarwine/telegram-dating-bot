@@ -1,12 +1,37 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.types import CallbackQuery, Message
 
 from bot.context import AppContext
+from bot.formatters import profile_card
 from bot.i18n import t
+from bot.keyboards import admin_report_keyboard, home_keyboard
 
 
 def _is_admin(ctx: AppContext, user_id: int) -> bool:
     return user_id in ctx.settings.admin_ids
+
+
+async def show_report(ctx: AppContext, message: Message, language: str | None, before_id: str | None = None) -> None:
+    report = await ctx.actions.next_report(before_id)
+    if not report:
+        if getattr(message, "photo", None):
+            await message.reply_text(t(language, "no_reports"), reply_markup=home_keyboard())
+            await message.delete()
+        else:
+            await message.edit_text(t(language, "no_reports"), reply_markup=home_keyboard())
+        return
+    profile = await ctx.profiles.get(report["target_id"]) or {}
+    text = (
+        f"{t(language, 'report_review')}\n\n"
+        f"Reporter: {report['actor_id']}\nReported user: {report['target_id']}\n"
+        f"Reported at: {report.get('created_at')}\n\n{profile_card(profile)}"
+    )
+    markup = admin_report_keyboard(str(report["_id"]), int(report["target_id"]))
+    if getattr(message, "photo", None):
+        await message.reply_text(text, reply_markup=markup)
+        await message.delete()
+    else:
+        await message.edit_text(text, reply_markup=markup)
 
 
 def register(app: Client, ctx: AppContext) -> None:
@@ -16,7 +41,7 @@ def register(app: Client, ctx: AppContext) -> None:
         if not _is_admin(ctx, message.from_user.id):
             await message.reply_text(t(user.get("language"), "not_admin"))
             return
-        await message.reply_text(t(user.get("language"), "admin_help"))
+        await message.reply_text(t(user.get("language"), "admin_help"), reply_markup=home_keyboard())
 
     @app.on_message(filters.command("reports") & filters.private)
     async def reports_handler(_: Client, message: Message) -> None:
@@ -24,15 +49,37 @@ def register(app: Client, ctx: AppContext) -> None:
         if not _is_admin(ctx, message.from_user.id):
             await message.reply_text(t(user.get("language"), "not_admin"))
             return
-        reports = await ctx.actions.latest_reports()
-        if not reports:
-            await message.reply_text(t(user.get("language"), "no_reports"))
+        report = await ctx.actions.next_report()
+        if not report:
+            await message.reply_text(t(user.get("language"), "no_reports"), reply_markup=home_keyboard())
             return
-        lines = [
-            f"Reporter {report['actor_id']} -> User {report['target_id']} at {report.get('created_at')}"
-            for report in reports
-        ]
-        await message.reply_text("\n".join(lines))
+        profile = await ctx.profiles.get(report["target_id"]) or {}
+        text = (
+            f"{t(user.get('language'), 'report_review')}\n\n"
+            f"Reporter: {report['actor_id']}\nReported user: {report['target_id']}\n"
+            f"Reported at: {report.get('created_at')}\n\n{profile_card(profile)}"
+        )
+        markup = admin_report_keyboard(str(report["_id"]), int(report["target_id"]))
+        await message.reply_text(text, reply_markup=markup)
+
+    @app.on_callback_query(filters.regex(r"^admin:report_next:[a-f0-9]{24}$"))
+    async def report_next_handler(_: Client, query: CallbackQuery) -> None:
+        if not _is_admin(ctx, query.from_user.id):
+            await query.answer(t(None, "not_admin"), show_alert=True)
+            return
+        await query.answer()
+        await show_report(ctx, query.message, None, query.data.rsplit(":", 1)[1])
+
+    @app.on_callback_query(filters.regex(r"^admin:report_ban:\d+$"))
+    async def report_ban_handler(_: Client, query: CallbackQuery) -> None:
+        if not _is_admin(ctx, query.from_user.id):
+            await query.answer(t(None, "not_admin"), show_alert=True)
+            return
+        target_id = int(query.data.rsplit(":", 1)[1])
+        await ctx.users.set_status(target_id, "banned")
+        await ctx.profiles.mark_banned(target_id, True)
+        await ctx.admin_events.add(query.from_user.id, "ban", target_id)
+        await query.answer(t(None, "banned"), show_alert=True)
 
     @app.on_message(filters.command("ban") & filters.private)
     async def ban_handler(_: Client, message: Message) -> None:
@@ -63,4 +110,3 @@ def register(app: Client, ctx: AppContext) -> None:
         await ctx.profiles.mark_banned(target_id, False)
         await ctx.admin_events.add(message.from_user.id, "unban", target_id)
         await message.reply_text(t(user.get("language"), "unbanned"))
-

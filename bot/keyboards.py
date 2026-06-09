@@ -9,7 +9,8 @@ def language_keyboard() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton("English", callback_data="lang:en"),
                 InlineKeyboardButton("မြန်မာ", callback_data="lang:my"),
-            ]
+            ],
+            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -26,15 +27,25 @@ def welcome_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def home_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home:start")]])
+
+
 def profile_start_keyboard(complete: bool) -> InlineKeyboardMarkup:
     if complete:
         return InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("✏️ Edit one field", callback_data="profile:edit_menu")],
                 [InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")],
+                [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
             ]
         )
-    return InlineKeyboardMarkup([[InlineKeyboardButton("✨ Continue setup", callback_data="profile:start")]])
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("✨ Continue setup", callback_data="profile:start")],
+            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
+        ]
+    )
 
 
 def profile_step_keyboard(step: str) -> InlineKeyboardMarkup | None:
@@ -60,6 +71,7 @@ def delete_profile_keyboard() -> InlineKeyboardMarkup:
         [
             [InlineKeyboardButton("Yes, delete it", callback_data="profile:delete")],
             [InlineKeyboardButton("Keep my profile", callback_data="profile:edit_menu")],
+            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -114,6 +126,7 @@ def browse_keyboard(target_id: int, can_like: bool) -> InlineKeyboardMarkup:
                 InlineKeyboardButton("Report", callback_data=f"report:{target_id}"),
                 InlineKeyboardButton("Block", callback_data=f"block:{target_id}"),
             ],
+            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
@@ -129,17 +142,18 @@ def incoming_heart_keyboard(user_id: int) -> InlineKeyboardMarkup:
                 InlineKeyboardButton("Report", callback_data=f"report:{user_id}"),
                 InlineKeyboardButton("Block", callback_data=f"block:{user_id}"),
             ],
+            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
 
-def whats_next_keyboard() -> InlineKeyboardMarkup:
+def admin_report_keyboard(report_id: str, target_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("👀 Browse profiles", callback_data="browse:start")],
             [
-                InlineKeyboardButton("✏️ Edit profile", callback_data="profile:edit_menu"),
-                InlineKeyboardButton("💘 Matches", callback_data="matches:show"),
+                InlineKeyboardButton("🛑 Ban reported user", callback_data=f"admin:report_ban:{target_id}"),
+                InlineKeyboardButton("Next ➡️", callback_data=f"admin:report_next:{report_id}"),
             ],
+            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )

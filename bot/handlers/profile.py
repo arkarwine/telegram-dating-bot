@@ -12,7 +12,7 @@ from bot.keyboards import (
     interested_in_keyboard,
     location_request_keyboard,
     profile_start_keyboard,
-    whats_next_keyboard,
+    welcome_keyboard,
 )
 from bot.models import display_place, profile_is_complete, public_profile_summary
 from bot.profile_setup import next_missing_step, next_step_after, previous_step
@@ -22,20 +22,37 @@ def profile_review_text(language: str | None, profile: dict | None) -> str:
     return t(language, "profile_collected_so_far", summary=public_profile_summary(profile))
 
 
+async def replace_with_text(message: Message, text: str, reply_markup=None) -> None:
+    if getattr(message, "photo", None):
+        await message.reply_text(text, reply_markup=reply_markup)
+        await message.delete()
+    else:
+        await message.edit_text(text, reply_markup=reply_markup)
+
+
 async def show_profile_preview(
     message: Message,
     language: str | None,
     profile: dict,
-    remove_keyboard: bool = False,
 ) -> None:
     caption = f"{t(language, 'profile_preview')}\n\n{profile_card(profile)}"
-    reply_markup = ReplyKeyboardRemove() if remove_keyboard else None
+    reply_markup = profile_start_keyboard(complete=True)
     photo = profile.get("photo_file_id") or profile.get("photo_url")
     if photo:
         await message.reply_photo(photo, caption=caption, reply_markup=reply_markup)
     else:
         await message.reply_text(caption, reply_markup=reply_markup)
-    await message.reply_text(t(language, "whats_next"), reply_markup=whats_next_keyboard())
+
+
+async def return_home(message: Message, language: str | None, remove_keyboard: bool = False) -> None:
+    if remove_keyboard:
+        cleanup = await message.reply_text(
+            t(language, "profile_return_home"), reply_markup=ReplyKeyboardRemove()
+        )
+        await cleanup.delete()
+        await message.reply_text(t(language, "welcome"), reply_markup=welcome_keyboard())
+    else:
+        await message.reply_text(t(language, "welcome"), reply_markup=welcome_keyboard())
 
 
 async def prompt_profile_step(
@@ -56,8 +73,7 @@ async def prompt_profile_step(
             await message.edit_text(text, reply_markup=profile_start_keyboard(complete=True))
         else:
             await message.reply_text(text, reply_markup=profile_start_keyboard(complete=True))
-        if profile:
-            await show_profile_preview(message, language, profile)
+        await return_home(message, language)
         return
 
     await ctx.users.set_profile_setup_step(user_id, step)
@@ -108,7 +124,7 @@ async def continue_profile_setup(
             await message.edit_text(text, reply_markup=profile_start_keyboard(complete=True))
         else:
             await message.reply_text(text, reply_markup=profile_start_keyboard(complete=True))
-        await show_profile_preview(message, language, profile)
+        await return_home(message, language)
         return
     review = f"{t(language, 'profile_saved_review')}\n\n{profile_review_text(language, profile)}"
     await prompt_profile_step(
@@ -129,10 +145,7 @@ def register(app: Client, ctx: AppContext) -> None:
         profile = await ctx.profiles.get(message.from_user.id)
         language = user.get("language")
         if profile_is_complete(profile):
-            await message.reply_text(
-                f"{t(language, 'profile_dashboard')}\n\n{profile_review_text(language, profile)}",
-                reply_markup=profile_start_keyboard(complete=True),
-            )
+            await show_profile_preview(message, language, profile)
         else:
             await message.reply_text(
                 f"{t(language, 'profile_help')}\n\n{profile_review_text(language, profile)}",
@@ -147,10 +160,8 @@ def register(app: Client, ctx: AppContext) -> None:
         await query.answer()
         if profile_is_complete(profile):
             await ctx.users.set_profile_edit_mode(query.from_user.id, False)
-            await query.message.edit_text(
-                f"{t(language, 'profile_dashboard')}\n\n{profile_review_text(language, profile)}",
-                reply_markup=profile_start_keyboard(complete=True),
-            )
+            await show_profile_preview(query.message, language, profile)
+            await query.message.delete()
             return
         await prompt_profile_step(
             ctx,
@@ -170,10 +181,14 @@ def register(app: Client, ctx: AppContext) -> None:
         await ctx.users.set_profile_edit_mode(query.from_user.id, False)
         await ctx.users.set_profile_setup_step(query.from_user.id, None)
         await query.answer()
-        await query.message.edit_text(
-            f"{t(language, 'profile_dashboard')}\n\n{profile_review_text(language, profile)}",
-            reply_markup=profile_start_keyboard(complete=profile_is_complete(profile)),
-        )
+        if profile_is_complete(profile):
+            await show_profile_preview(query.message, language, profile)
+            await query.message.delete()
+        else:
+            await query.message.edit_text(
+                f"{t(language, 'profile_help')}\n\n{profile_review_text(language, profile)}",
+                reply_markup=profile_start_keyboard(False),
+            )
 
     @app.on_callback_query(filters.regex(r"^profile:edit_menu$"))
     async def profile_edit_menu_callback(_: Client, query: CallbackQuery) -> None:
@@ -183,7 +198,8 @@ def register(app: Client, ctx: AppContext) -> None:
         await query.answer()
         await ctx.users.set_profile_setup_step(query.from_user.id, None)
         await ctx.users.set_profile_edit_mode(query.from_user.id, False)
-        await query.message.edit_text(
+        await replace_with_text(
+            query.message,
             f"{t(language, 'profile_edit_menu')}\n\n{profile_review_text(language, profile)}",
             reply_markup=profile_edit_keyboard(),
         )
@@ -231,7 +247,8 @@ def register(app: Client, ctx: AppContext) -> None:
     async def profile_delete_confirm_callback(_: Client, query: CallbackQuery) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         await query.answer()
-        await query.message.edit_text(
+        await replace_with_text(
+            query.message,
             t(user.get("language"), "profile_delete_confirm"),
             reply_markup=delete_profile_keyboard(),
         )
@@ -245,7 +262,11 @@ def register(app: Client, ctx: AppContext) -> None:
         await ctx.users.set_profile_setup_step(query.from_user.id, None)
         await ctx.users.set_profile_edit_mode(query.from_user.id, False)
         await query.answer()
-        await query.message.edit_text(t(user.get("language"), "profile_deleted"), reply_markup=profile_start_keyboard(False))
+        await replace_with_text(
+            query.message,
+            t(user.get("language"), "profile_deleted"),
+            reply_markup=profile_start_keyboard(False),
+        )
 
     @app.on_callback_query(filters.regex(r"^profile:(gender|interested_in):(female|male|other|any)$"))
     async def profile_choice_callback(_: Client, query: CallbackQuery) -> None:
@@ -302,9 +323,8 @@ def register(app: Client, ctx: AppContext) -> None:
             await status_message.edit_text(
                 f"{t(language, 'profile_complete_with_location', place=place)}\n\n"
                 f"{profile_review_text(language, profile)}",
-                reply_markup=profile_start_keyboard(True),
             )
-            await show_profile_preview(message, language, profile, remove_keyboard=True)
+            await return_home(message, language, remove_keyboard=True)
         else:
             await status_message.edit_text(t(language, "location_saved", place=place))
             await continue_profile_setup(
