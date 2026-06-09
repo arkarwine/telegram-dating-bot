@@ -4,7 +4,7 @@ from pyrogram.types import CallbackQuery, Message
 from bot.context import AppContext
 from bot.formatters import profile_card
 from bot.i18n import t
-from bot.keyboards import browse_keyboard
+from bot.keyboards import browse_keyboard, incoming_heart_keyboard
 from bot.matching import next_candidate
 from bot.models import profile_is_complete
 
@@ -24,7 +24,8 @@ async def send_next_profile(
             await message.reply_text(text)
         return
     can_like = profile_is_complete(viewer_profile)
-    text = profile_card(candidate, anonymous=not can_like)
+    counts = await ctx.actions.counts_for_target(candidate["user_id"])
+    text = profile_card(candidate, anonymous=not can_like, counts=counts)
     if not can_like:
         await ctx.users.increment_preview(user_id)
         text = f"{t(language, 'anonymous_notice')}\n\n{text}"
@@ -65,22 +66,44 @@ def register(app: Client, ctx: AppContext) -> None:
             lines.append(f"{name}: {contact}")
         await message.reply_text("\n".join(lines))
 
-    @app.on_callback_query(filters.regex(r"^(like|pass|report|block):\d+$"))
+    async def send_hearted_profile(client: Client, target_id: int, actor_id: int) -> None:
+        actor_profile = await ctx.profiles.get(actor_id)
+        if not actor_profile:
+            return
+        target_user = await ctx.users.get_by_telegram_id(target_id) or {}
+        language = target_user.get("language")
+        counts = await ctx.actions.counts_for_target(actor_id)
+        text = f"{t(language, 'incoming_heart')}\n\n{profile_card(actor_profile, counts=counts)}"
+        if actor_profile.get("photo_file_id"):
+            await client.send_photo(
+                target_id,
+                actor_profile["photo_file_id"],
+                caption=text,
+                reply_markup=incoming_heart_keyboard(actor_id),
+            )
+        else:
+            await client.send_message(
+                target_id, text, reply_markup=incoming_heart_keyboard(actor_id)
+            )
+
+    @app.on_callback_query(filters.regex(r"^(heart|like|pass|report|block):\d+$"))
     async def browse_callback(client: Client, query: CallbackQuery) -> None:
         action, raw_target = query.data.split(":", 1)
+        if action == "like":
+            action = "heart"
         target_id = int(raw_target)
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         language = user.get("language")
         viewer_profile = await ctx.profiles.get(query.from_user.id)
         matched = False
 
-        if action == "like" and not profile_is_complete(viewer_profile):
+        if action == "heart" and not profile_is_complete(viewer_profile):
             await query.answer(t(language, "like_requires_profile"), show_alert=True)
             return
 
-        if action == "like":
-            await ctx.actions.add(query.from_user.id, target_id, "like")
-            if await ctx.actions.has_action(target_id, query.from_user.id, "like"):
+        if action == "heart":
+            await ctx.actions.add(query.from_user.id, target_id, "heart")
+            if await ctx.actions.has_any_action(target_id, query.from_user.id, ["heart", "like"]):
                 matched = True
                 await ctx.matches.create(query.from_user.id, target_id)
                 target_profile = await ctx.profiles.get(target_id) or {}
@@ -102,6 +125,7 @@ def register(app: Client, ctx: AppContext) -> None:
                         await client.send_message(target_id, t(target_lang, "contact_missing"))
             else:
                 await query.answer(t(language, "liked"))
+                await send_hearted_profile(client, target_id, query.from_user.id)
         elif action == "pass":
             await ctx.actions.add(query.from_user.id, target_id, "pass")
             await query.answer(t(language, "passed"))
@@ -114,4 +138,5 @@ def register(app: Client, ctx: AppContext) -> None:
 
         if matched:
             await query.answer()
-        await send_next_profile(ctx, query.message, query.from_user.id, edit=True)
+        can_edit_message = not bool(getattr(query.message, "photo", None))
+        await send_next_profile(ctx, query.message, query.from_user.id, edit=can_edit_message)

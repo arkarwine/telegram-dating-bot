@@ -5,14 +5,21 @@ from typing import Any
 from bot.models import display_place, profile_is_complete
 
 
-def profile_card(profile: dict[str, Any], anonymous: bool = False) -> str:
+def profile_card(
+    profile: dict[str, Any],
+    anonymous: bool = False,
+    counts: dict[str, int] | None = None,
+) -> str:
     name = profile.get("display_name") or "Someone"
     age = profile.get("age") or "?"
     gender = profile.get("gender") or "?"
     bio = profile.get("bio") or ""
     place = display_place(profile.get("location"))
     prefix = "👀 Preview" if anonymous else "💌 Profile"
-    return f"{prefix}: {name}, {age}\n\n🧭 {place}\n✨ {gender}\n\n“{bio}”"
+    stats = ""
+    if counts:
+        stats = f"\n\n❤️ {counts.get('hearts', 0)} hearts · 🚪 {counts.get('passes', 0)} passes"
+    return f"{prefix}: {name}, {age}\n\n🧭 {place}\n✨ {gender}\n\n“{bio}”{stats}"
 
 
 def completion_status(profile: dict[str, Any] | None) -> str:

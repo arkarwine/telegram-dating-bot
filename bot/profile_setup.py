@@ -14,6 +14,16 @@ PROFILE_SETUP_STEPS = [
     "location",
 ]
 
+PROFILE_STEP_LABELS = {
+    "display_name": "Display name",
+    "age": "Age",
+    "gender": "Gender",
+    "interested_in": "Looking for",
+    "bio": "Bio",
+    "photo": "Photo",
+    "location": "Location",
+}
+
 
 def next_missing_step(profile: dict[str, Any] | None) -> str | None:
     profile = profile or {}
@@ -46,3 +56,9 @@ def next_step_after(profile: dict[str, Any] | None, completed_step: str) -> str 
         return next_missing_step(profile)
     return PROFILE_SETUP_STEPS[index + 1] if index + 1 < len(PROFILE_SETUP_STEPS) else None
 
+
+def previous_step(step: str | None) -> str | None:
+    if step not in PROFILE_SETUP_STEPS:
+        return None
+    index = PROFILE_SETUP_STEPS.index(step)
+    return PROFILE_SETUP_STEPS[index - 1] if index > 0 else None

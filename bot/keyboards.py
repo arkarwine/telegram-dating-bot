@@ -1,4 +1,6 @@
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+
+from bot.profile_setup import PROFILE_STEP_LABELS, PROFILE_SETUP_STEPS
 
 
 def language_keyboard() -> InlineKeyboardMarkup:
@@ -25,8 +27,40 @@ def welcome_keyboard() -> InlineKeyboardMarkup:
 
 
 def profile_start_keyboard(complete: bool) -> InlineKeyboardMarkup:
-    label = "✨ Edit Profile" if complete else "✨ Set Up Profile"
-    return InlineKeyboardMarkup([[InlineKeyboardButton(label, callback_data="profile:start")]])
+    if complete:
+        return InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("✏️ Edit one field", callback_data="profile:edit_menu")],
+                [InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")],
+            ]
+        )
+    return InlineKeyboardMarkup([[InlineKeyboardButton("✨ Continue setup", callback_data="profile:start")]])
+
+
+def profile_step_keyboard(step: str) -> InlineKeyboardMarkup | None:
+    rows: list[list[InlineKeyboardButton]] = []
+    if step != "display_name":
+        rows.append([InlineKeyboardButton("⬅️ Back", callback_data="profile:back")])
+    rows.append([InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")])
+    return InlineKeyboardMarkup(rows)
+
+
+def profile_edit_keyboard() -> InlineKeyboardMarkup:
+    rows = [
+        [InlineKeyboardButton(f"✏️ {PROFILE_STEP_LABELS[step]}", callback_data=f"profile:edit:{step}")]
+        for step in PROFILE_SETUP_STEPS
+    ]
+    rows.append([InlineKeyboardButton("🗑 Delete profile", callback_data="profile:delete_confirm")])
+    return InlineKeyboardMarkup(rows)
+
+
+def delete_profile_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Yes, delete it", callback_data="profile:delete")],
+            [InlineKeyboardButton("Keep my profile", callback_data="profile:edit_menu")],
+        ]
+    )
 
 
 def gender_keyboard() -> InlineKeyboardMarkup:
@@ -56,10 +90,21 @@ def interested_in_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+def location_request_keyboard() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        [
+            [KeyboardButton("📍 Share my location", request_location=True)],
+            [KeyboardButton("⬅️ Back"), KeyboardButton("🗑 Delete profile")],
+        ],
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
+
+
 def browse_keyboard(target_id: int, can_like: bool) -> InlineKeyboardMarkup:
     first_row = []
     if can_like:
-        first_row.append(InlineKeyboardButton("Like", callback_data=f"like:{target_id}"))
+        first_row.append(InlineKeyboardButton("❤️ Heart", callback_data=f"heart:{target_id}"))
     first_row.append(InlineKeyboardButton("Pass", callback_data=f"pass:{target_id}"))
     return InlineKeyboardMarkup(
         [
@@ -67,6 +112,21 @@ def browse_keyboard(target_id: int, can_like: bool) -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton("Report", callback_data=f"report:{target_id}"),
                 InlineKeyboardButton("Block", callback_data=f"block:{target_id}"),
+            ],
+        ]
+    )
+
+
+def incoming_heart_keyboard(user_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("❤️ Heart back", callback_data=f"heart:{user_id}"),
+                InlineKeyboardButton("Pass", callback_data=f"pass:{user_id}"),
+            ],
+            [
+                InlineKeyboardButton("Report", callback_data=f"report:{user_id}"),
+                InlineKeyboardButton("Block", callback_data=f"block:{user_id}"),
             ],
         ]
     )

@@ -58,3 +58,17 @@ def display_place(location: dict[str, Any] | None) -> str:
     ]
     return ", ".join(str(part) for part in parts if part) or location.get("display_name") or "Myanmar"
 
+
+def public_profile_summary(profile: dict[str, Any] | None) -> str:
+    profile = profile or {}
+    location = profile.get("location")
+    lines = [
+        f"Name: {profile.get('display_name') or 'Not set'}",
+        f"Age: {profile.get('age') or 'Not set'}",
+        f"Gender: {profile.get('gender') or 'Not set'}",
+        f"Looking for: {profile.get('interested_in') or 'Not set'}",
+        f"Bio: {profile.get('bio') or 'Not set'}",
+        f"Photo: {'Added' if profile.get('photo_file_id') else 'Not set'}",
+        f"Location: {display_place(location) if location else 'Not set'}",
+    ]
+    return "\n".join(lines)

@@ -36,7 +36,7 @@ async def next_candidate(
     actions: ActionsRepo,
 ) -> dict[str, Any] | None:
     viewer = await profiles.get(viewer_id)
-    excluded = await actions.target_ids_for_actor(viewer_id, ["like", "pass", "block", "report"])
+    excluded = await actions.target_ids_for_actor(viewer_id, ["heart", "like", "pass", "block", "report"])
     base_query = {
         "user_id": {"$ne": viewer_id, "$nin": excluded},
         "complete": True,
@@ -64,4 +64,3 @@ async def next_candidate(
 
     relaxed_age = [candidate for candidate in compatible if age_in_range(viewer, candidate, tolerance=10)]
     return relaxed_age[0] if relaxed_age else None
-

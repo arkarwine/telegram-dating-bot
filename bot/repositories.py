@@ -72,6 +72,9 @@ class ProfilesRepo:
     async def get(self, user_id: int) -> dict[str, Any] | None:
         return await self.db.profiles.find_one({"user_id": user_id})
 
+    async def delete(self, user_id: int) -> None:
+        await self.db.profiles.delete_one({"user_id": user_id})
+
     async def update_fields(self, user_id: int, fields: dict[str, Any]) -> dict[str, Any]:
         current = await self.get(user_id) or {"user_id": user_id}
         merged = {**current, **fields}
@@ -120,9 +123,32 @@ class ActionsRepo:
             )
         )
 
+    async def has_any_action(self, actor_id: int, target_id: int, action_types: list[str]) -> bool:
+        return bool(
+            await self.db.actions.find_one(
+                {"actor_id": actor_id, "target_id": target_id, "type": {"$in": action_types}}
+            )
+        )
+
     async def target_ids_for_actor(self, actor_id: int, types: list[str]) -> list[int]:
         cursor = self.db.actions.find({"actor_id": actor_id, "type": {"$in": types}})
         return [int(doc["target_id"]) async for doc in cursor]
+
+    async def counts_for_target(self, target_id: int) -> dict[str, int]:
+        pipeline = [
+            {"$match": {"target_id": target_id, "type": {"$in": ["heart", "like", "pass"]}}},
+            {"$group": {"_id": "$type", "count": {"$sum": 1}}},
+        ]
+        counts = {"hearts": 0, "passes": 0}
+        async for doc in self.db.actions.aggregate(pipeline):
+            if doc["_id"] in {"heart", "like"}:
+                counts["hearts"] += int(doc["count"])
+            elif doc["_id"] == "pass":
+                counts["passes"] += int(doc["count"])
+        return counts
+
+    async def delete_for_user(self, user_id: int) -> None:
+        await self.db.actions.delete_many({"$or": [{"actor_id": user_id}, {"target_id": user_id}]})
 
     async def latest_reports(self, limit: int = 10) -> list[dict[str, Any]]:
         cursor = self.db.actions.find({"type": "report"}).sort("created_at", -1).limit(limit)
@@ -154,6 +180,9 @@ class MatchesRepo:
     async def list_for_user(self, user_id: int) -> list[dict[str, Any]]:
         cursor = self.db.matches.find({"user_ids": user_id}).sort("created_at", -1)
         return [doc async for doc in cursor]
+
+    async def delete_for_user(self, user_id: int) -> None:
+        await self.db.matches.delete_many({"user_ids": user_id})
 
 
 class AdminEventsRepo:
