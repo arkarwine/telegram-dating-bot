@@ -174,9 +174,8 @@ MESSAGES = {
     },
     "my": {
     "welcome": (
-        "💘 မင်္ဂလာပါ၊ မြန်မာ dating space မှကြိုဆိုပါသည်။\n\n"
-        "Profile များကို အရင်ကြည့်နိုင်သော်လည်း like နှင့် match များကို profile ပြီးမှသာ သုံးနိုင်မည်။ "
-        "သင့် Telegram contact ကို mutual match ဖြစ်မှသာ ထုတ်ပြမည်။"
+        "New Friends For You Bot မှကြိုဆိုပါတယ်!\n\n"
+        "သူငယ်ချင်းအသစ်တွေရှာဖွေဖို့ အောက်က button များကိုနှိပ်ပါ။"
     ),
     "help": (
         "✨ အသုံးပြုပုံ\n\n"
