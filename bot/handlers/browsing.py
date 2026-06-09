@@ -1,18 +1,20 @@
 from pyrogram import Client, filters
 from pyrogram.errors import RPCError
-from pyrogram.types import CallbackQuery, InputMediaPhoto, Message
+from pyrogram.types import CallbackQuery, InputMediaPhoto, Message, ReplyKeyboardRemove
 
+from bot.chat_sessions import close_chat_session, open_chat_session
 from bot.context import AppContext
 from bot.formatters import profile_card
 from bot.i18n import t
 from bot.keyboards import (
     admin_report_keyboard,
     browse_keyboard,
-    cancel_relay_keyboard,
+    active_chat_keyboard,
     home_keyboard,
     incoming_heart_keyboard,
-    match_relay_keyboard,
+    match_actions_keyboard,
     matches_keyboard,
+    welcome_keyboard,
 )
 from bot.matching import next_candidate
 from bot.models import profile_is_complete
@@ -95,8 +97,16 @@ def register(app: Client, ctx: AppContext) -> None:
         )
 
     @app.on_callback_query(filters.regex(r"^matches:show$"))
-    async def matches_callback(_: Client, query: CallbackQuery) -> None:
+    async def matches_callback(client: Client, query: CallbackQuery) -> None:
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        if user.get("relay_target_id"):
+            await close_chat_session(client, ctx, query.from_user.id)
+            cleanup = await query.message.reply_text(
+                t(user.get("language"), "chat_closed"),
+                reply_markup=ReplyKeyboardRemove(),
+                quote=False,
+            )
+            await cleanup.delete()
         await query.answer()
         text, markup = await matches_view(query.from_user.id, user.get("language"))
         await query.message.edit_text(
@@ -105,27 +115,84 @@ def register(app: Client, ctx: AppContext) -> None:
         )
 
     @app.on_callback_query(filters.regex(r"^match:message:\d+$"))
-    async def match_message_callback(_: Client, query: CallbackQuery) -> None:
+    async def match_message_callback(client: Client, query: CallbackQuery) -> None:
         target_id = int(query.data.rsplit(":", 1)[1])
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         if not await ctx.matches.get_between(query.from_user.id, target_id):
             await query.answer(t(user.get("language"), "not_a_match"), show_alert=True)
             return
-        await ctx.users.set_relay_target(query.from_user.id, target_id)
+        target_profile = await ctx.profiles.get(target_id) or {}
+        target_name = target_profile.get("display_name") or "your match"
+        await open_chat_session(client, ctx, query.from_user.id, target_id, target_name)
         await query.answer()
-        text = t(user.get("language"), "relay_prompt")
-        if getattr(query.message, "photo", None):
-            await query.message.reply_text(text, reply_markup=cancel_relay_keyboard(), quote=False)
-        else:
-            await query.message.edit_text(text, reply_markup=cancel_relay_keyboard())
+        await query.message.reply_text(
+            t(user.get("language"), "chat_opened", name=target_name),
+            reply_markup=active_chat_keyboard(target_name),
+            quote=False,
+        )
 
-    @app.on_callback_query(filters.regex(r"^match:message_cancel$"))
-    async def match_message_cancel(_: Client, query: CallbackQuery) -> None:
+    @app.on_callback_query(filters.regex(r"^match:view:\d+$"))
+    async def match_view_callback(_: Client, query: CallbackQuery) -> None:
+        target_id = int(query.data.rsplit(":", 1)[1])
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
-        await ctx.users.set_relay_target(query.from_user.id, None)
+        if not await ctx.matches.get_between(query.from_user.id, target_id):
+            await query.answer(t(user.get("language"), "not_a_match"), show_alert=True)
+            return
+        target_user = await ctx.users.get_by_telegram_id(target_id) or {}
+        target_profile = await ctx.profiles.get(target_id) or {}
+        name = target_profile.get("display_name") or "Your match"
+        direct_username = (
+            target_user.get("username")
+            if user.get("username") and target_user.get("username")
+            else None
+        )
         await query.answer()
-        text, markup = await matches_view(query.from_user.id, user.get("language"))
-        await query.message.edit_text(text, reply_markup=markup)
+        await query.message.edit_text(
+            t(
+                user.get("language"),
+                "match_details",
+                name=name,
+                direct=t(user.get("language"), "direct_available")
+                if direct_username
+                else t(user.get("language"), "direct_not_available"),
+            ),
+            reply_markup=match_actions_keyboard(target_id, direct_username),
+        )
+
+    @app.on_callback_query(filters.regex(r"^match:direct_unavailable:\d+$"))
+    async def direct_unavailable_callback(_: Client, query: CallbackQuery) -> None:
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await query.answer(t(user.get("language"), "direct_unavailable"), show_alert=True)
+
+    @app.on_message(filters.command(["start", "help", "settings", "browse", "matches", "profile", "admin", "reports", "ban", "unban"]) & filters.private, group=-2)
+    async def leave_chat_on_command(client: Client, message: Message) -> None:
+        user = await ctx.users.get_by_telegram_id(message.from_user.id)
+        if user and user.get("relay_target_id") and await close_chat_session(
+            client, ctx, message.from_user.id
+        ):
+            cleanup = await message.reply_text(
+                t(user.get("language"), "chat_closed"),
+                reply_markup=ReplyKeyboardRemove(),
+                quote=False,
+            )
+            await cleanup.delete()
+
+    @app.on_message(filters.private & filters.regex(r"^(💘 Matches|✖️ Exit chat)$"), group=-2)
+    async def chat_navigation(client: Client, message: Message) -> None:
+        user = await ctx.users.upsert_from_telegram(message.from_user, ctx.settings.default_language)
+        await close_chat_session(client, ctx, message.from_user.id)
+        cleanup = await message.reply_text(
+            t(user.get("language"), "chat_closed"), reply_markup=ReplyKeyboardRemove(), quote=False
+        )
+        await cleanup.delete()
+        if message.text == "💘 Matches":
+            text, markup = await matches_view(message.from_user.id, user.get("language"))
+            await message.reply_text(text, reply_markup=markup, quote=False)
+        else:
+            await message.reply_text(
+                t(user.get("language"), "welcome"), reply_markup=welcome_keyboard(), quote=False
+            )
+        message.stop_propagation()
 
     @app.on_message(filters.private & ~filters.command(["start", "help", "settings", "browse", "matches", "profile", "admin", "reports", "ban", "unban"]), group=-1)
     async def relay_message_handler(client: Client, message: Message) -> None:
@@ -134,23 +201,41 @@ def register(app: Client, ctx: AppContext) -> None:
         if not target_id:
             return
         if not await ctx.matches.get_between(message.from_user.id, target_id):
-            await ctx.users.set_relay_target(message.from_user.id, None)
+            await close_chat_session(client, ctx, message.from_user.id)
+            return
+        if await ctx.actions.has_action(message.from_user.id, target_id, "block") or await ctx.actions.has_action(
+            target_id, message.from_user.id, "block"
+        ):
+            await close_chat_session(client, ctx, message.from_user.id)
+            await message.reply_text(
+                t(user.get("language"), "chat_blocked"),
+                reply_markup=ReplyKeyboardRemove(),
+                quote=False,
+            )
+            message.stop_propagation()
             return
         profile = await ctx.profiles.get(message.from_user.id) or {}
         sender_name = profile.get("display_name") or message.from_user.first_name or "Your match"
         target_user = await ctx.users.get_by_telegram_id(target_id) or {}
         try:
-            await client.send_message(
+            if target_user.get("relay_target_id") != message.from_user.id:
+                await client.send_message(
+                    target_id,
+                    t(target_user.get("language"), "chat_incoming", name=sender_name),
+                    reply_markup=match_actions_keyboard(
+                        message.from_user.id,
+                        message.from_user.username
+                        if message.from_user.username and target_user.get("username")
+                        else None,
+                    ),
+                )
+            await client.copy_message(
                 target_id,
-                t(target_user.get("language"), "relay_received", name=sender_name),
-                reply_markup=match_relay_keyboard(message.from_user.id),
+                message.chat.id,
+                message.id,
             )
-            await client.copy_message(target_id, message.chat.id, message.id)
-            await message.reply_text(t(user.get("language"), "relay_sent"), quote=False)
         except RPCError:
             await message.reply_text(t(user.get("language"), "relay_failed"), quote=False)
-        finally:
-            await ctx.users.set_relay_target(message.from_user.id, None)
         message.stop_propagation()
 
     async def send_hearted_profile(client: Client, target_id: int, actor_id: int) -> None:
@@ -203,16 +288,19 @@ def register(app: Client, ctx: AppContext) -> None:
                 viewer_user = await ctx.users.get_by_telegram_id(query.from_user.id) or {}
                 target_name = target_profile.get("display_name") or "Someone"
                 await query.message.reply_text(t(language, "match", name=target_name), quote=False)
-                if target_user.get("username"):
+                if target_user.get("username") and viewer_user.get("username"):
                     await query.message.reply_text(
                         t(language, "contact", username=target_user["username"]),
-                        reply_markup=match_relay_keyboard(target_id),
+                        reply_markup=match_actions_keyboard(
+                            target_id,
+                            target_user["username"] if viewer_user.get("username") else None,
+                        ),
                         quote=False,
                     )
                 else:
                     await query.message.reply_text(
                         t(language, "contact_via_bot"),
-                        reply_markup=match_relay_keyboard(target_id),
+                        reply_markup=match_actions_keyboard(target_id),
                         quote=False,
                     )
                 if target_user:
@@ -220,17 +308,20 @@ def register(app: Client, ctx: AppContext) -> None:
                     viewer_name = viewer_profile.get("display_name") if viewer_profile else "Someone"
                     try:
                         await client.send_message(target_id, t(target_lang, "match", name=viewer_name))
-                        if viewer_user.get("username"):
+                        if viewer_user.get("username") and target_user.get("username"):
                             await client.send_message(
                                 target_id,
                                 t(target_lang, "contact", username=viewer_user["username"]),
-                                reply_markup=match_relay_keyboard(query.from_user.id),
+                                reply_markup=match_actions_keyboard(
+                                    query.from_user.id,
+                                    viewer_user["username"] if target_user.get("username") else None,
+                                ),
                             )
                         else:
                             await client.send_message(
                                 target_id,
                                 t(target_lang, "contact_via_bot"),
-                                reply_markup=match_relay_keyboard(query.from_user.id),
+                                reply_markup=match_actions_keyboard(query.from_user.id),
                             )
                     except RPCError:
                         pass

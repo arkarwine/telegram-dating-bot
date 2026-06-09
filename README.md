@@ -10,7 +10,8 @@ Myanmar-only Telegram dating bot MVP using Python, Kurigram, and MongoDB.
 - Optional profile details including socials, games, zodiac, height, hobbies, occupation, sports, education, languages, music, food, weekend style, and relationship goals.
 - Myanmar-only location validation with reverse geocoding and MongoDB cache.
 - Like/pass browsing, mutual matches, and contact reveal only after both users match.
-- Private bot-relayed messaging so matches can communicate without public Telegram usernames.
+- Persistent private chat mode so matches can message naturally without public Telegram usernames; message contents are not stored in MongoDB.
+- Optional direct-message links when both matched users have public Telegram usernames.
 - Report, block, and admin ban/unban flows.
 - English and Burmese message catalogs.
 

@@ -31,18 +31,31 @@ async def finish_profile_edit(
     field: str,
     edit_message: bool = False,
 ) -> None:
+    user = await ctx.users.get_by_telegram_id(user_id) or {}
+    group = user.get("profile_edit_group") or "basics"
     await ctx.users.set_profile_setup_step(user_id, None)
     await ctx.users.set_profile_edit_mode(user_id, False)
     text = t(language, "profile_field_updated", field=field.replace("_", " ").title())
     if field == "location":
         cleanup = await message.reply_text(text, reply_markup=ReplyKeyboardRemove(), quote=False)
         await cleanup.delete()
-        await message.reply_text(t(language, "welcome"), reply_markup=welcome_keyboard(), quote=False)
+        await message.reply_text(
+            t(language, f"profile_edit_group_{group}"),
+            reply_markup=profile_edit_group_keyboard(group),
+            quote=False,
+        )
         return
     if edit_message:
-        await message.edit_text(text, reply_markup=welcome_keyboard())
+        await message.edit_text(
+            f"{text}\n\n{t(language, f'profile_edit_group_{group}')}",
+            reply_markup=profile_edit_group_keyboard(group),
+        )
     else:
-        await message.reply_text(text, reply_markup=welcome_keyboard(), quote=False)
+        await message.reply_text(
+            f"{text}\n\n{t(language, f'profile_edit_group_{group}')}",
+            reply_markup=profile_edit_group_keyboard(group),
+            quote=False,
+        )
 
 
 async def replace_with_text(message: Message, text: str, reply_markup=None) -> None:
@@ -221,6 +234,7 @@ def register(app: Client, ctx: AppContext) -> None:
         await query.answer()
         await ctx.users.set_profile_setup_step(query.from_user.id, None)
         await ctx.users.set_profile_edit_mode(query.from_user.id, False)
+        await ctx.users.set_profile_edit_group(query.from_user.id, None)
         await replace_with_text(
             query.message,
             f"{t(language, 'profile_edit_menu')}\n\n{profile_review_text(language, profile)}",
@@ -231,6 +245,7 @@ def register(app: Client, ctx: AppContext) -> None:
     async def profile_edit_group_callback(_: Client, query: CallbackQuery) -> None:
         group = query.data.rsplit(":", 1)[1]
         user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await ctx.users.set_profile_edit_group(query.from_user.id, group)
         await query.answer()
         await query.message.edit_text(
             t(user.get("language"), f"profile_edit_group_{group}"),
@@ -276,11 +291,11 @@ def register(app: Client, ctx: AppContext) -> None:
         language = user.get("language")
         await query.answer()
         if user.get("profile_edit_mode"):
-            profile = await ctx.profiles.get(query.from_user.id)
             await ctx.users.set_profile_setup_step(query.from_user.id, None)
+            group = user.get("profile_edit_group") or "basics"
             await query.message.edit_text(
-                f"{t(language, 'profile_edit_menu')}\n\n{profile_review_text(language, profile)}",
-                reply_markup=profile_edit_keyboard(),
+                t(language, f"profile_edit_group_{group}"),
+                reply_markup=profile_edit_group_keyboard(group),
             )
             return
         previous = previous_step(user.get("profile_setup_step"))

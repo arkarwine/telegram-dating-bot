@@ -1,4 +1,9 @@
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+from pyrogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 
 from bot.profile_setup import OPTIONAL_PROFILE_FIELDS, PROFILE_STEP_LABELS
 
@@ -199,24 +204,34 @@ def admin_report_keyboard(report_id: str, target_id: int) -> InlineKeyboardMarku
 
 def matches_keyboard(matches: list[tuple[int, str]]) -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(f"💬 {name}", callback_data=f"match:message:{user_id}")]
+        [InlineKeyboardButton(f"💘 {name}", callback_data=f"match:view:{user_id}")]
         for user_id, name in matches[:20]
     ]
     rows.append([InlineKeyboardButton("🏠 Home", callback_data="home:start")])
     return InlineKeyboardMarkup(rows)
 
 
-def match_relay_keyboard(user_id: int) -> InlineKeyboardMarkup:
+def match_actions_keyboard(user_id: int, username: str | None = None) -> InlineKeyboardMarkup:
+    direct_url = f"https://t.me/{username}" if username else None
     return InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("💬 Send a message", callback_data=f"match:message:{user_id}")],
+            [InlineKeyboardButton("💬 Open private chat", callback_data=f"match:message:{user_id}")],
+            [
+                InlineKeyboardButton("↗️ Direct message", url=direct_url)
+                if direct_url
+                else InlineKeyboardButton(
+                    "↗️ Direct message", callback_data=f"match:direct_unavailable:{user_id}"
+                )
+            ],
             [InlineKeyboardButton("💘 My matches", callback_data="matches:show")],
             [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
         ]
     )
 
 
-def cancel_relay_keyboard() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [[InlineKeyboardButton("Cancel", callback_data="match:message_cancel")]]
+def active_chat_keyboard(name: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        [[KeyboardButton("💘 Matches"), KeyboardButton("✖️ Exit chat")]],
+        resize_keyboard=True,
+        is_persistent=True,
     )

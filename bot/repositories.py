@@ -58,11 +58,29 @@ class UsersRepo:
             {"$set": {"profile_edit_mode": editing, "updated_at": utcnow()}},
         )
 
-    async def set_relay_target(self, telegram_id: int, target_id: int | None) -> None:
-        if target_id is None:
-            update = {"$unset": {"relay_target_id": ""}, "$set": {"updated_at": utcnow()}}
+    async def set_profile_edit_group(self, telegram_id: int, group: str | None) -> None:
+        if group is None:
+            update = {"$unset": {"profile_edit_group": ""}, "$set": {"updated_at": utcnow()}}
         else:
-            update = {"$set": {"relay_target_id": target_id, "updated_at": utcnow()}}
+            update = {"$set": {"profile_edit_group": group, "updated_at": utcnow()}}
+        await self.db.users.update_one({"telegram_id": telegram_id}, update)
+
+    async def set_relay_target(
+        self, telegram_id: int, target_id: int | None, target_name: str | None = None
+    ) -> None:
+        if target_id is None:
+            update = {
+                "$unset": {"relay_target_id": "", "relay_target_name": ""},
+                "$set": {"updated_at": utcnow()},
+            }
+        else:
+            update = {
+                "$set": {
+                    "relay_target_id": target_id,
+                    "relay_target_name": target_name,
+                    "updated_at": utcnow(),
+                }
+            }
         await self.db.users.update_one({"telegram_id": telegram_id}, update)
 
     async def increment_preview(self, telegram_id: int) -> int:
