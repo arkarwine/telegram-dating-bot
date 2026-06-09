@@ -14,6 +14,7 @@ from bot.keyboards import (
     chat_request_keyboard,
     match_actions_keyboard,
     matches_keyboard,
+    no_candidates_keyboard,
     unmatch_confirm_keyboard,
 )
 from bot.matching import next_candidate
@@ -31,13 +32,14 @@ async def send_next_profile(
         text = t(language, "no_candidates")
         if edit:
             if getattr(message, "photo", None):
-                await message.reply_text(text, reply_markup=home_keyboard(), quote=False)
+                await message.reply_text(text, reply_markup=no_candidates_keyboard(), quote=False)
                 await message.delete()
             else:
-                await message.edit_text(text, reply_markup=home_keyboard())
+                await message.edit_text(text, reply_markup=no_candidates_keyboard())
         else:
-            await message.reply_text(text, reply_markup=home_keyboard())
+            await message.reply_text(text, reply_markup=no_candidates_keyboard())
         return
+    await ctx.actions.add(user_id, candidate["user_id"], "seen")
     can_like = profile_is_complete(viewer_profile)
     counts = await ctx.actions.counts_for_target(candidate["user_id"])
     text = profile_card(candidate, anonymous=not can_like, counts=counts)
@@ -92,6 +94,13 @@ def register(app: Client, ctx: AppContext) -> None:
     async def browse_start_callback(_: Client, query: CallbackQuery) -> None:
         await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
         await query.answer()
+        await send_next_profile(ctx, query.message, query.from_user.id, edit=True)
+
+    @app.on_callback_query(filters.regex(r"^browse:review_seen$"))
+    async def browse_review_seen_callback(_: Client, query: CallbackQuery) -> None:
+        user = await ctx.users.upsert_from_telegram(query.from_user, ctx.settings.default_language)
+        await ctx.actions.clear_for_actor(query.from_user.id, ["seen"])
+        await query.answer(t(user.get("language"), "browse_cache_cleared"), show_alert=True)
         await send_next_profile(ctx, query.message, query.from_user.id, edit=True)
 
     @app.on_message(filters.command("stats") & filters.private)
@@ -430,6 +439,7 @@ def register(app: Client, ctx: AppContext) -> None:
                 await query.answer(t(language, "liked"))
                 await send_hearted_profile(client, target_id, query.from_user.id)
         elif action == "pass":
+            await ctx.actions.add(query.from_user.id, target_id, "pass")
             await query.answer(t(language, "passed"))
         elif action == "report":
             report = await ctx.actions.add(query.from_user.id, target_id, "report")
@@ -442,11 +452,20 @@ def register(app: Client, ctx: AppContext) -> None:
             )
             for admin_id in ctx.settings.admin_ids:
                 try:
-                    await client.send_message(
-                        admin_id,
-                        owner_text,
-                        reply_markup=admin_report_keyboard(str(report["_id"]), target_id),
-                    )
+                    photo = target_profile.get("photo_file_id") or target_profile.get("photo_url")
+                    if photo:
+                        await client.send_photo(
+                            admin_id,
+                            photo,
+                            caption=owner_text,
+                            reply_markup=admin_report_keyboard(str(report["_id"]), target_id),
+                        )
+                    else:
+                        await client.send_message(
+                            admin_id,
+                            owner_text,
+                            reply_markup=admin_report_keyboard(str(report["_id"]), target_id),
+                        )
                 except RPCError:
                     pass
         elif action == "block":

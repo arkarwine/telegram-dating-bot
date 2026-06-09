@@ -40,6 +40,15 @@ def home_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home:start")]])
 
 
+def no_candidates_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("🔄 Review seen profiles", callback_data="browse:review_seen")],
+            [InlineKeyboardButton("🏠 Home", callback_data="home:start")],
+        ]
+    )
+
+
 def profile_start_keyboard(complete: bool) -> InlineKeyboardMarkup:
     if complete:
         return InlineKeyboardMarkup(

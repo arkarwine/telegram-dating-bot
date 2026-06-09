@@ -36,7 +36,7 @@ async def next_candidate(
     actions: ActionsRepo,
 ) -> dict[str, Any] | None:
     viewer = await profiles.get(viewer_id)
-    excluded = await actions.target_ids_for_actor(viewer_id, ["block", "report"])
+    excluded = await actions.target_ids_for_actor(viewer_id, ["block", "report", "seen"])
     base_query = {
         "user_id": {"$ne": viewer_id, "$nin": excluded},
         "complete": True,

@@ -11,6 +11,26 @@ def _is_admin(ctx: AppContext, user_id: int) -> bool:
     return user_id in ctx.settings.admin_ids
 
 
+async def _send_report_card(
+    message: Message,
+    text: str,
+    profile: dict,
+    *,
+    reply_markup,
+    edit: bool,
+) -> None:
+    photo = profile.get("photo_file_id") or profile.get("photo_url")
+    if edit and not photo and not getattr(message, "photo", None):
+        await message.edit_text(text, reply_markup=reply_markup)
+        return
+    if photo:
+        await message.reply_photo(photo, caption=text, reply_markup=reply_markup, quote=False)
+    else:
+        await message.reply_text(text, reply_markup=reply_markup, quote=False)
+    if edit:
+        await message.delete()
+
+
 async def show_report(ctx: AppContext, message: Message, language: str | None, before_id: str | None = None) -> None:
     report = await ctx.actions.next_report(before_id)
     if not report:
@@ -27,11 +47,7 @@ async def show_report(ctx: AppContext, message: Message, language: str | None, b
         f"Reported at: {report.get('created_at')}\n\n{profile_card(profile)}"
     )
     markup = admin_report_keyboard(str(report["_id"]), int(report["target_id"]))
-    if getattr(message, "photo", None):
-        await message.reply_text(text, reply_markup=markup, quote=False)
-        await message.delete()
-    else:
-        await message.edit_text(text, reply_markup=markup)
+    await _send_report_card(message, text, profile, reply_markup=markup, edit=True)
 
 
 def register(app: Client, ctx: AppContext) -> None:
@@ -60,7 +76,7 @@ def register(app: Client, ctx: AppContext) -> None:
             f"Reported at: {report.get('created_at')}\n\n{profile_card(profile)}"
         )
         markup = admin_report_keyboard(str(report["_id"]), int(report["target_id"]))
-        await message.reply_text(text, reply_markup=markup)
+        await _send_report_card(message, text, profile, reply_markup=markup, edit=False)
 
     @app.on_callback_query(filters.regex(r"^admin:report_next:[a-f0-9]{24}$"))
     async def report_next_handler(_: Client, query: CallbackQuery) -> None:

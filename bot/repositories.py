@@ -189,6 +189,9 @@ class ActionsRepo:
         cursor = self.db.actions.find({"actor_id": actor_id, "type": {"$in": types}})
         return [int(doc["target_id"]) async for doc in cursor]
 
+    async def clear_for_actor(self, actor_id: int, types: list[str]) -> None:
+        await self.db.actions.delete_many({"actor_id": actor_id, "type": {"$in": types}})
+
     async def counts_for_target(self, target_id: int) -> dict[str, int]:
         pipeline = [
             {"$match": {"target_id": target_id, "type": {"$in": ["heart", "like", "pass"]}}},
